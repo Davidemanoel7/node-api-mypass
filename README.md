@@ -13,7 +13,7 @@ O projeto 'mypass' é uma API REST desenvolvida em Node.js que permite armazenar
 Certifique-se de ter as seguintes ferramentas instaladas em seu sistema:
 - [Node.js](https://nodejs.org/)
 - [npm](https://www.npmjs.com/) (gerenciador de pacotes do Node.js)
-- Banco de dados (por exemplo, MongoDB, PostgreSQL, ou SQLite)
+- Banco de dados (por exemplo, MongoDB, PostgreSQL, ou SQLite) (Estou usando o MongoDB com mongoose)
 
 ## Configuração
 1. Clone este repositório: `git clone https://github.com/Davidemanoel7/mypass.git`
