@@ -82,8 +82,6 @@ router.patch('/:userId', (req, res, next) => {
             })
 })
 
-// PAROU AQUI: https://youtu.be/WDrU305J1yw?si=-r38o0QZ_1tcUrDS&t=1841
-
 router.delete('/:userId', (req, res, next) => {
     const id = req.params.userId
     User.remove({_id: id})
