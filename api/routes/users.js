@@ -72,19 +72,21 @@ router.get('/:userId', (req, res, next) => {
         })
 })
 
+// partial changes on user.schema
 router.patch('/:userId', (req, res, next) => {
     const id = req.params.userId
-    User.update({ _id: id },
-                { $set: { 
-                    name: req.body.newName,
-                    password: req.params.newPassword
-                } 
-            })
+    
+    User.findByIdAndUpdate( id, 
+                    { $set: req.body},
+                    { new: true })
+                    .then( result => res.status(200).json( result ))
+                    .catch( err => res.status(500).json( { error: err }) )
 })
 
 router.delete('/:userId', (req, res, next) => {
     const id = req.params.userId
-    User.remove({_id: id})
+    
+    User.findByIdAndDelete({_id: id})
         .exec()
         .then( result => {
             res.status(200).json(result)
