@@ -54,7 +54,7 @@ router.post('/', (req, res, next) => {
 router.get('/:userId', (req, res, next) => {
     const id = req.params.userId
     
-    Pass.findById({userId: id})
+    Pass.find({userId: id})
         .exec()
         .then( doc => {
             console.log('From mongoDB', doc)
