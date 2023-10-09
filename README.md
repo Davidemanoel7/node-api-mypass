@@ -40,7 +40,8 @@ Sinta-se à vontade para contribuir com melhorias ou correções para este proje
 Este projeto está sob a [Licença MIT](LICENSE).
 
 ## Tutorial :paperclip:
-Estou seguindo o [tutorial](https://www.youtube.com/playlist?list=PL55RiY5tL51q4D-B63KBnygU6opNPFk_q) da playlist do canal Academind para a construção desta API.
+Estou seguindo o <a href="https://www.youtube.com/playlist?list=PL55RiY5tL51q4D-B63KBnygU6opNPFk_q" target="_blank">tutorial</a> da playlist do canal Academind para a construção desta API.
+
 ---
 
 © 2023 Davidemanoel7
