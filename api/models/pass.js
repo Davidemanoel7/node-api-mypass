@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const User = require('../models/users');
+const { ObjectId } = require('mongodb');
 
 const passSchema = mongoose.Schema({
     _id: mongoose.Schema.Types.ObjectId,
@@ -12,8 +13,9 @@ const passSchema = mongoose.Schema({
         type: String
     },
     // userId deve ser mesmo string??
+    // https://www.youtube.com/watch?v=CMDsTMV2AgI&list=PL55RiY5tL51q4D-B63KBnygU6opNPFk_q&index=8
     userId: {
-        type: String,
+        type: ObjectId,
         ref: User
     }
 })
