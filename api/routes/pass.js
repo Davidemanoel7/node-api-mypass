@@ -9,7 +9,6 @@ const User = require('../models/users')
 
 //não usar /pass, pois em app.js já é referenciado.
 // caso use, o end-point seria: /pass/pass/
-//
 router.get('/', (req, res, next) => {
     Pass.find()
         .then( docs => {
