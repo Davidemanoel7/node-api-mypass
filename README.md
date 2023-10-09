@@ -9,9 +9,8 @@
 O projeto 'mypass' é uma API REST desenvolvida em Node.js que permite armazenar senhas com segurança. Esta API foi criada para simplificar o processo de gerenciamento de senhas e fornecer uma maneira segura de armazenar e recuperar informações confidenciais.
 ## Funcionalidades :computer:
 - Criação, leitura, atualização e exclusão de senhas.
-- Autenticação de usuários para garantir a segurança dos dados.
+- Autenticação de usuários para garantir a segurança dos dados (JWT).
 - Armazenamento seguro de senhas usando criptografia.
-- API simples e fácil de usar.
 
 ## Pré-requisitos :small_blue_diamond:
 Certifique-se de ter as seguintes ferramentas instaladas em seu sistema:
@@ -34,7 +33,7 @@ A autenticação de usuário será necessária para acessar algumas rotas da API
 
 ## Contribuição :bulb:
 
-Sinta-se à vontade para contribuir com melhorias ou correções para este projeto. Abra um problema ou envie um pull request.
+Sinta-se à vontade para contribuir com melhorias ou correções para este projeto. Abra uma issue ou envie um pull request.
 
 ## Licença :scroll:
 Este projeto está sob a [Licença MIT](LICENSE).
