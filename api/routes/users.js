@@ -41,7 +41,7 @@ router.post('/', (req, res, next) => {
         .then( result => {
             console.log(result)
             res.status(201).json({
-                massage: `Created user successfully`,
+                massage: `Created user ${result.user} successfully`,
                 createduser: {
                     id: result._id,
                     name: result.name,
