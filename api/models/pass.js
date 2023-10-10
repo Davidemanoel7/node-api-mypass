@@ -12,8 +12,6 @@ const passSchema = mongoose.Schema({
         required: true,
         type: String
     },
-    // userId deve ser mesmo string??
-    // https://www.youtube.com/watch?v=CMDsTMV2AgI&list=PL55RiY5tL51q4D-B63KBnygU6opNPFk_q&index=8
     userId: {
         type: ObjectId,
         ref: User
