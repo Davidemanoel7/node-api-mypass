@@ -12,8 +12,11 @@ const User = require('../models/users')
 router.get('/', (req, res, next) => {
     Pass.find()
         .then( docs => {
-            console.log(docs)
-            res.status(200).json(docs)    
+            const response = {
+                count: docs.length,
+                pass: docs
+            }
+            res.status(200).json(response)
         })
         .catch( err => {
             console.log(err)
@@ -36,8 +39,12 @@ router.post('/', (req, res, next) => {
         .then( result => {
             console.log(result)
             res.status(201).json({
-                message: 'Request (POST) to /pass sucessfully',
-                createdpass: pass
+                message: `Password created for ${result.userId} sucessfully`,
+                createdpass: {
+                    id: result._id,
+                    description: result.description,
+                    userId: result.userId
+                }
             })
         })
         .catch(
@@ -55,6 +62,7 @@ router.get('/:userId', (req, res, next) => {
     const id = req.params.userId
     
     Pass.find({userId: id})
+        .select('_id description password userId')
         .exec()
         .then( doc => {
             console.log('From mongoDB', doc)
@@ -62,7 +70,7 @@ router.get('/:userId', (req, res, next) => {
                 res.status(200).json( doc )
             } else {
                 res.status(404).json({
-                message: "Not found or invalid entry for provided ID"
+                message: `Not found or invalid entry for provided ID ${req.params.userId}`
                 })
             }
         })
@@ -78,7 +86,10 @@ router.delete('/:passId', (req, res, next) => {
     Pass.findByIdAndDelete({_id: id})
         .exec()
         .then( result => {
-            res.status(200).json(result)
+            res.status(200).json({
+                message: `Password deleted successfully for user ${result.user}`,
+                deletedPass: result
+            })
         })
         .catch( err => {
             console.log(err)
