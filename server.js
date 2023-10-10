@@ -17,6 +17,8 @@ const port = process.env.PORT || 3000
 mongoose.connect(mongoUrl)
 const database= mongoose.connection
 
+mongoose.promisse = global.promisse
+
 database.on('connected', () => console.log('Database connected'))
 
 const app = express()
