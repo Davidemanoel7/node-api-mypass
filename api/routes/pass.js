@@ -27,34 +27,45 @@ router.get('/', (req, res, next) => {
 })
 
 router.post('/', (req, res, next) => {
-    
-    const pass = new Pass({
-        _id: new mongoose.Types.ObjectId(),
-        description: req.body.description,
-        password: req.body.password,
-        userId: req.body.userId
-    })
-
-    pass.save()
-        .then( result => {
-            console.log(result)
-            res.status(201).json({
-                message: `Password created for ${result.userId} sucessfully`,
-                createdpass: {
-                    id: result._id,
-                    description: result.description,
-                    userId: result.userId
-                }
-            })
-        })
-        .catch(
-            err => {
-                console.log(err)
-                res.status(500).json({
-                    error: err
+    // https://youtu.be/VKuY8QscZwY?si=t4yoF1X8U31ZMp_6&t=896
+    User.findById(req.body.userId)
+        .then( user => {
+            if (!user){
+                return res.status(404).json({
+                    message: `User not found with ID ${req.body.userId}`
+                })
+            } else {
+                const newPass = new Pass({
+                    _id: new mongoose.Types.ObjectId(),
+                    description: req.body.description,
+                    password: req.body.password,
+                    userId: req.body.userId
+                })
+                newPass.save()
+                .then( result => {
+                    console.log(result)
+                    res.status(201).json({
+                        message: `Password created sucessfully for user by ID`,
+                        createdpass: {
+                            id: result._id,
+                            description: result.description,
+                            userId: result.userId
+                        }
+                    })
+                })
+                .catch( err => {
+                    res.status(500).json({
+                        error: err
+                    })
                 })
             }
-        )
+        })
+        .catch( err => {
+            console.log(err)
+            res.status(500).json({
+                error: err
+            })
+        })
 })
 
 // GET all passwords with userId
