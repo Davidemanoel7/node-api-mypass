@@ -14,7 +14,8 @@ const passSchema = mongoose.Schema({
     },
     userId: {
         type: ObjectId,
-        ref: User
+        ref: User,
+        required: true // => Necessário?? Testar um POST sem informar este campo e ver o efeito colateral...
     }
 })
 
