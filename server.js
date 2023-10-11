@@ -30,5 +30,5 @@ app.use('/users', userRoutes)
 app.use('/pass', passRoutes)
 
 app.listen(port, () => {
-    console.log(`Server started at ${3000}`)
+    console.log(`Server started at ${port}`)
 })
