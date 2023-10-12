@@ -27,7 +27,6 @@ router.get('/', (req, res, next) => {
 })
 
 router.post('/', (req, res, next) => {
-    // https://youtu.be/VKuY8QscZwY?si=t4yoF1X8U31ZMp_6&t=896
     User.findById(req.body.userId)
         .then( user => {
             if (!user){
@@ -45,17 +44,12 @@ router.post('/', (req, res, next) => {
                 .then( result => {
                     console.log(result)
                     res.status(201).json({
-                        message: `Password created sucessfully for user by ID`,
+                        message: `Password created sucessfully for user ${user.user}`,
                         createdpass: {
                             id: result._id,
                             description: result.description,
                             userId: result.userId
                         }
-                    })
-                })
-                .catch( err => {
-                    res.status(500).json({
-                        error: err
                     })
                 })
             }
