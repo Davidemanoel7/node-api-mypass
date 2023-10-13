@@ -7,6 +7,8 @@ const mongoose = require('mongoose')
 const Pass = require('../models/pass')
 const User = require('../models/users')
 
+const bcrypt = require('bcryptjs')
+
 //não usar /pass, pois em app.js já é referenciado.
 // caso use, o end-point seria: /pass/pass/
 router.get('/', (req, res, next) => {
@@ -34,24 +36,27 @@ router.post('/', (req, res, next) => {
                     message: `User not found with ID ${req.body.userId}`
                 })
             } else {
-                const newPass = new Pass({
-                    _id: new mongoose.Types.ObjectId(),
-                    description: req.body.description,
-                    password: req.body.password,
-                    userId: req.body.userId
-                })
-                newPass.save()
-                .then( result => {
-                    console.log(result)
-                    res.status(201).json({
-                        message: `Password created sucessfully for user ${user.user}`,
-                        createdpass: {
-                            id: result._id,
-                            description: result.description,
-                            userId: result.userId
-                        }
+                bcrypt.hash(req.body.password, 10)
+                    .then( hashedPass => {
+                        const newPass = new Pass({
+                            _id: new mongoose.Types.ObjectId(),
+                            description: req.body.description,
+                            password: hashedPass,
+                            userId: req.body.userId
+                        })
+                        newPass.save()
+                        .then( result => {
+                            console.log(result)
+                            res.status(201).json({
+                                message: `Password created sucessfully for user ${user.user}`,
+                                createdpass: {
+                                    id: result._id,
+                                    description: result.description,
+                                    userId: result.userId
+                                }
+                            })
+                        })
                     })
-                })
             }
         })
         .catch( err => {
