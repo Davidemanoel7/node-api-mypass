@@ -19,7 +19,7 @@ const database= mongoose.connection
 
 mongoose.promisse = global.promisse
 
-database.on('connected', () => console.log('Database connected'))
+database.on('connected', () => console.log('\n📦 Database connected\n'))
 
 const app = express()
 
