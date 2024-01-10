@@ -5,6 +5,7 @@ const router = express.Router()
 const mongoose = require('mongoose')
 
 const User = require('../models/users')
+const bcrypt = require('bcryptjs')
 
 //não usar /users, pois em app.js já é referenciado.
 // caso use, o end-point seria: /users/users/
@@ -24,46 +25,51 @@ router.get('/', (req, res, next) => {
             res.status(500).json({
                 error: err
             })
-        })  
+        })
 })
 
 router.post('/', (req, res, next) => {
-    
-    const user = new User({
-        _id: new mongoose.Types.ObjectId(),
-        name: req.body.name,
-        user: req.body.user,
-        email: req.body.email,
-        password: req.body.password,
-    })
-    
-    user.save()
-        .then( result => {
-            console.log(result)
-            res.status(201).json({
-                massage: `Created user ${result.user} successfully`,
-                createduser: {
-                    id: result._id,
-                    name: result.name,
-                    user: result.user,
-                    email: result.email
-                },
+
+    bcrypt.hash(req.body.password, 10)
+    .then (
+        hashedPass => {
+            const user = new User({
+                _id: new mongoose.Types.ObjectId(),
+                name: req.body.name,
+                user: req.body.user,
+                email: req.body.email,
+                password: hashedPass,
             })
-        })
-        .catch(
-            err => {
-                console.log(err)
-                res.status(500).json({
-                    error: err
+            user.save()
+                .then( result => {
+                    console.log(result)
+                    res.status(201).json({
+                        massage: `Created user ${result.user} successfully`,
+                        createduser: {
+                            id: result._id,
+                            name: result.name,
+                            user: result.user,
+                            email: result.email
+                        },
+                    })
                 })
-            }
-        )
+                .catch(
+                    err => {
+                        console.log(err)
+                        res.status(500).json({
+                            error: `${err}: Já existe um usuário com o username ou email informado...`
+                        })
+                    }
+                )
+        }
+    )
+    .catch( err => console.log(err))
 })
 
-router.get('/:userId', (req, res, next) => {
-    const id = req.params.userId
+router.get('/:user', (req, res, next) => {
+    const usr = req.params.user
 
-    User.findById(id)
+    User.find({user: usr})
         .select('_id name user email password')
         .exec()
         .then( doc => {
@@ -86,7 +92,7 @@ router.get('/:userId', (req, res, next) => {
 router.patch('/:userId', (req, res, next) => {
     const id = req.params.userId
     
-    User.findByIdAndUpdate( id, 
+    User.findByIdAndUpdate( id,
                     { $set: req.body},
                     { new: true })
                     .then( result => res.status(200).json( {
@@ -94,7 +100,7 @@ router.patch('/:userId', (req, res, next) => {
                         updatedUser : result
                     }))
                     .catch( err => res.status(500).json({
-                         error: err
+                        error: err
                     }))
 })
 
