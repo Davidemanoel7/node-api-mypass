@@ -28,6 +28,7 @@ app.use(express.json())
 // Routes which should handle requests
 app.use('/users', userRoutes)
 app.use('/pass', passRoutes)
+// app.use('/static', express.statis('public')) //entregar arquivos estáticos como imagens, arquivos CSS, e arquivos JavaScript que estejam no diretório public. Serão entregues na rota: localhost:3000/static/<path_to_file>
 
 app.listen(port, () => {
     console.log(`Server started at ${port}`)
