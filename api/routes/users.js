@@ -144,17 +144,12 @@ router.get('/:user', (req, res, next) => {
 router.patch('/:userId', upload.single('profileImage'), (req, res, next) => {
     const id = req.params.userId
 
-    const pass = req.body.password
-
-    if ( pass && pass === "" || pass.length < 6) {
-        return res.status(500).json({
-            message: `Senha informada (${pass}) não pode ser vazia ou ter menos de 6 caracteres.`
-        })
-    }
-
-    // bcrypt.hashSync()
     User.findByIdAndUpdate( id,
-                    { $set: req.body},
+                    { $set: {
+                        name: req.body.name,
+                        user: req.body.user,
+                        email: req.body.email,
+                    }},
                     { new: true })
                     .then( result => {
                         console.log(result);
@@ -168,6 +163,7 @@ router.patch('/:userId', upload.single('profileImage'), (req, res, next) => {
                         })
                     })
                     .catch( err => res.status(500).json({
+                        message: `Não foi possível atualizar os dados...`,
                         error: err
                     }))
 })
@@ -187,6 +183,33 @@ router.delete('/:userId', (req, res, next) => {
             console.log(err)
             res.status(500).json({
                 error: err
+            })
+        })
+})
+
+router.patch('/:userId/changePass', (req, res, next) => {
+    const id = req.params.userId
+    const pass = req.body.password
+
+    if ( pass && pass === "" || pass.length < 6) {
+        return res.status(500).json({
+            message: `Senha informada (${pass}) não pode ser vazia ou ter menos de 6 caracteres.`
+        })
+    }
+    const newPass = bcrypt.hashSync(pass, 10)
+
+    User.findByIdAndUpdate(id ,
+        { $set: { password: newPass }},
+        { new: true })
+        .then( result => {
+            console.log(`\n${result}\n`)
+            res.status(200).json({
+                message: `Password changed from user ${result.user}`,
+            })
+        })
+        .catch( err => {
+            res.status(500).json({
+                message: `Error: ${err}. Não foi possível alterar a senha.`
             })
         })
 })
