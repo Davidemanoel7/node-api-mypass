@@ -75,7 +75,6 @@ router.get('/:userId', (req, res, next) => {
         .select('_id description password userId')
         .exec()
         .then( doc => {
-            console.log('From mongoDB', doc)
             if ( doc ) {
                 res.status(200).json( doc )
             } else {
