@@ -16,9 +16,22 @@ router.get('/', (req, res, next) => {
         .then( docs => {
             const response = {
                 count: docs.length,
-                users: docs
+                users: docs.map( doc => {
+                    return {
+                        _id: doc._id,
+                        name: doc.name,
+                        user: doc.user,
+                        email: doc.email,
+                        request: {
+                            type: "GET",
+                            url: `/users/${doc.user}`
+                        }
+                    }
+                })
             }
-            res.status(200).json(response)
+            res.status(200).json({
+                user: response,
+            })
         })
         .catch( err => {
             console.log(err)
@@ -49,7 +62,11 @@ router.post('/', (req, res, next) => {
                             id: result._id,
                             name: result.name,
                             user: result.user,
-                            email: result.email
+                            email: result.email,
+                            request: {
+                                type: "GET",
+                                url: `users/${result.user}/`,
+                            }
                         },
                     })
                 })
@@ -73,9 +90,14 @@ router.get('/:user', (req, res, next) => {
         .select('_id name user email password')
         .exec()
         .then( doc => {
-            console.log("From mongoDB:",doc)
-            if (doc) {
-                res.status(200).json(doc)
+            if ( doc ) {
+                res.status(200).json({
+                    user: doc,
+                    requests: {
+                        type: "PATCH/DELETE",
+                        url: `/users/${doc.map(e => e._id)}`
+                    }
+                })
             } else {
                 res.status(404).json({
                     message: `Not found or invalid entry for provided ID ${req.params.userId}`
