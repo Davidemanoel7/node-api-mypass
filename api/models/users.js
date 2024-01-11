@@ -20,6 +20,10 @@ const userSchema = new mongoose.Schema({
         required: true,
         type: String
     },
+    profileImage: {
+        require: false,
+        type: String
+    }
 })
 
 module.exports = mongoose.model('User', userSchema)
