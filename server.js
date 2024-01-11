@@ -7,6 +7,7 @@ const express = require('express')
 
 const userRoutes = require('./api/routes/users')
 const passRoutes = require('./api/routes/pass')
+const authRoutes = require('./api/routes/auth')
 
 // const app = require('./app')
 
@@ -28,6 +29,7 @@ app.use(express.json())
 // Routes which should handle requests
 app.use('/users', userRoutes)
 app.use('/pass', passRoutes)
+app.use('/auth', authRoutes)
 
 app.listen(port, () => {
     console.log(`Server started at ${port}`)
