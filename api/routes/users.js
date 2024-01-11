@@ -76,50 +76,41 @@ router.post('/', (req, res, next) => {
             message: `Senha informada (${pass}) não pode ser vazia ou ter menos de 6 caracteres.`
         })
     }
-    bcrypt.hash(pass, 10)
-    .then (
-        hashedPass => {
-            const user = new User({
-                _id: new mongoose.Types.ObjectId(),
-                name: req.body.name,
-                user: req.body.user,
-                email: req.body.email,
-                password: hashedPass,
-                // profileImage: req.file.path
-            })
-            user.save()
-                .then( result => {
-                    console.log(result)
-                    res.status(201).json({
-                        massage: `Created user ${result.user} successfully`,
-                        createduser: {
-                            id: result._id,
-                            name: result.name,
-                            user: result.user,
-                            email: result.email,
-                            request: {
-                                type: "GET",
-                                url: `users/${result.user}/`,
-                            }
-                        },
-                    })
-                })
-                .catch(
-                    err => {
-                        console.log(err)
-                        res.status(500).json({
-                            error: `${err}: Já existe um usuário com o username ou email informado...`
-                        })
-                    }
-                )
-        }
-    )
-    .catch( err => {
-        console.log(err)
-        res.status(500).json({
-            error: `${err}: Nenhuma senha informada ou formato errado...`
-        })
+    const hashedPass = bcrypt.hashSync(pass, 10)
+
+    const user = new User({
+        _id: new mongoose.Types.ObjectId(),
+        name: req.body.name,
+        user: req.body.user,
+        email: req.body.email,
+        password: hashedPass,
+        // profileImage: req.file.path
     })
+    user.save()
+        .then( result => {
+            console.log(result)
+            res.status(201).json({
+                massage: `Created user ${result.user} successfully`,
+                createduser: {
+                    id: result._id,
+                    name: result.name,
+                    user: result.user,
+                    email: result.email,
+                    request: {
+                        type: "GET",
+                        url: `users/${result.user}/`,
+                    }
+                },
+            })
+        })
+        .catch(
+            err => {
+                console.log(err)
+                res.status(500).json({
+                    error: `${err}: Já existe um usuário com o username ou email informado...`
+                })
+            }
+        )
 })
 
 router.get('/:user', (req, res, next) => {
