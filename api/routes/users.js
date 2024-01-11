@@ -7,6 +7,32 @@ const mongoose = require('mongoose')
 const User = require('../models/users')
 const bcrypt = require('bcryptjs')
 
+const multer = require('multer');
+
+const storage = multer.diskStorage({
+    destination: (req, file, callback) => {
+        callback(null, './uploads');
+    },
+    filename: (req, file, callback) => {
+        callback(null, new Date().toISOString() + file.originalname)
+    }
+})
+
+const fileFilter = (req, file, callback) => {
+    if( file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') {
+        callback(null, true);
+    } else {
+        callback(new Error('image type or size not supported'), false)
+    }
+}
+const upload = multer({
+    storage: storage,
+    limits: {
+        fileSize: 1024 * 1024 * 5
+    },
+    fileFilter: fileFilter,
+})
+
 //não usar /users, pois em app.js já é referenciado.
 // caso use, o end-point seria: /users/users/
 router.get('/', (req, res, next) => {
@@ -43,7 +69,14 @@ router.get('/', (req, res, next) => {
 
 router.post('/', (req, res, next) => {
 
-    bcrypt.hash(req.body.password, 10)
+    const pass = req.body.password
+
+    if ( pass && pass === "" || pass.length < 6) {
+        return res.status(500).json({
+            message: `Senha informada (${pass}) não pode ser vazia ou ter menos de 6 caracteres.`
+        })
+    }
+    bcrypt.hash(pass, 10)
     .then (
         hashedPass => {
             const user = new User({
@@ -52,6 +85,7 @@ router.post('/', (req, res, next) => {
                 user: req.body.user,
                 email: req.body.email,
                 password: hashedPass,
+                // profileImage: req.file.path
             })
             user.save()
                 .then( result => {
@@ -80,7 +114,12 @@ router.post('/', (req, res, next) => {
                 )
         }
     )
-    .catch( err => console.log(err))
+    .catch( err => {
+        console.log(err)
+        res.status(500).json({
+            error: `${err}: Nenhuma senha informada ou formato errado...`
+        })
+    })
 })
 
 router.get('/:user', (req, res, next) => {
@@ -111,16 +150,32 @@ router.get('/:user', (req, res, next) => {
 })
 
 // partial changes on user.schema
-router.patch('/:userId', (req, res, next) => {
+router.patch('/:userId', upload.single('profileImage'), (req, res, next) => {
     const id = req.params.userId
-    
+
+    const pass = req.body.password
+
+    if ( pass && pass === "" || pass.length < 6) {
+        return res.status(500).json({
+            message: `Senha informada (${pass}) não pode ser vazia ou ter menos de 6 caracteres.`
+        })
+    }
+
+    // bcrypt.hashSync()
     User.findByIdAndUpdate( id,
                     { $set: req.body},
                     { new: true })
-                    .then( result => res.status(200).json( {
-                        message: `Updated user ${req.body.user} successfully`,
-                        updatedUser : result
-                    }))
+                    .then( result => {
+                        console.log(result);
+                        res.status(200).json({
+                            message: `Updated user ${result.user} successfully`,
+                            updatedUser : result,
+                            request: {
+                                type: 'GET/',
+                                url: `/users/${result.user}`
+                            }
+                        })
+                    })
                     .catch( err => res.status(500).json({
                         error: err
                     }))
