@@ -43,14 +43,16 @@ router.get('/', (req, res, next) => {
             const response = {
                 count: docs.length,
                 users: docs.map( doc => {
-                    return {
-                        _id: doc._id,
-                        name: doc.name,
-                        user: doc.user,
-                        email: doc.email,
-                        request: {
-                            type: "GET",
-                            url: `/users/${doc.user}`
+                    if ( doc.living ) {
+                        return {
+                            _id: doc._id,
+                            name: doc.name,
+                            user: doc.user,
+                            email: doc.email,
+                            request: {
+                                type: "GET",
+                                url: `/users/${doc.user}`
+                            }
                         }
                     }
                 })
@@ -109,19 +111,19 @@ router.post('/signup', (req, res, next) => {
         }})
 })
 
-router.get('/:user', (req, res, next) => {
-    const usr = req.params.user
+router.get('/:userId', (req, res, next) => {
+    const usr = req.params.userId
 
     User.find({user: usr})
-        .select('_id name user email password profileImage')
+        .select('_id name user email password profileImage living')
         .exec()
         .then( doc => {
-            if ( doc ) {
+            if ( doc && doc.living ) {
                 res.status(200).json({
                     user: doc,
                     requests: {
                         type: "PATCH/DELETE",
-                        url: `/users/${doc.map(e => e.user)}`
+                        url: `/users/${doc.map(e => e._id)}`
                     }
                 })
             } else {
@@ -204,6 +206,32 @@ router.patch('/:userId/changeProfileImage', upload.single('profileImage'), (req,
             res.status(500).json({
                 error: err,
                 message: `User by ID:${req.params.userId} not found OR Cannot change profile image :(`
+            })
+        })
+})
+
+router.patch('/inactivate/:userId/', (req, res, next) => {
+    const id = req.params.userId
+
+    User.findByIdAndUpdate(id,
+        { $set: { living: false }},
+        { new: true })
+        .then( usr => {
+            if (!usr) {
+                return res.status(404).json({
+                    message: 'User not found'
+                })
+            }
+
+            console.log(usr)
+            res.status(200).json({
+                user: usr,
+                message: `User ${usr.name} inactivated successfully!`
+            })
+        })
+        .catch( err => {
+            res.status(500).json({
+                error: err
             })
         })
 })
