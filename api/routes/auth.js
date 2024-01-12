@@ -1,12 +1,8 @@
 const express = require('express')
-
 const router = express.Router()
-
 const mongoose = require('mongoose')
 
-const Pass = require('../models/pass')
 const User = require('../models/users')
-
 const bcrypt = require('bcryptjs')
 
 router.get('/auth/', (req, res, next) => {
@@ -20,7 +16,7 @@ router.get('/auth/', (req, res, next) => {
                     message: `Usuário ${req.body.user} não encontrado`
                 })
             } else {
-                valid = validateUser( result.password, req.body.pass)
+                valid = validateUser( req.body.pass, result.password )
                 // console.log(result)
                 .then( valid => {
                     console.log(valid)
@@ -41,53 +37,14 @@ router.get('/auth/', (req, res, next) => {
             })
         })
 })
-//edgar66
-//thatssuc
-async function validateUser(hash, passW) {
+
+async function validateUser(pass, hash) {
     bcrypt
-        .compare(passW, hash)
-        .then(res => {
+        .compare(pass, hash)
+        .then( res => {
             console.log(res) // return true
         })
         .catch(err => console.error(err.message))
 }
-
-/*
-
-Talvez a rota de validação de senha deva ser algo como /validate/:pass
-
-e a busca nas senhas deva ser do tipo:
-Pass.find({password: pass})
-
-porém, deveríamos comparar se a senha pertence a algum usuário e se é válida, com o resultado da busca anterior:
-
-
-Pass.find({password: pass}) //Buscando alguma senha igual a informada
-    .then( result => {
-        console.log(result)
-        if (!result) {
-            res.status(404).json({
-                message: `Pass not found`
-            })
-        }
-        User.findById(result.userId) //Buscando algum usuário com a senha informada
-            .then( user => {
-                console.log(user)
-                if (!user) {
-                    res.status(404).json({
-                        message: `User not found`
-                    })
-                }
-
-                // Comparando se o usuário e senhas informados são válidos.
-                if (user.user == req.body.user) and (result.password == req.body.pass) {
-                    res.status(200).json({
-                        message: `Logged in`
-                    })
-                }
-
-            })
-})
-*/
 
 module.exports = router;
