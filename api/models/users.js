@@ -24,6 +24,10 @@ const userSchema = new mongoose.Schema({
     profileImage: {
         required: false,
         type: String
+    },
+    living: {
+        type: Boolean,
+        default: true
     }
 });
 
