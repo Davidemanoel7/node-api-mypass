@@ -117,7 +117,7 @@ router.get('/:user', (req, res, next) => {
     const usr = req.params.user
 
     User.find({user: usr})
-        .select('_id name user email password')
+        .select('_id name user email password profileImage')
         .exec()
         .then( doc => {
             if ( doc ) {
@@ -141,7 +141,7 @@ router.get('/:user', (req, res, next) => {
 })
 
 // partial changes on user.schema
-router.patch('/:userId', upload.single('profileImage'), (req, res, next) => {
+router.patch('/:userId', (req, res, next) => {
     const id = req.params.userId
 
     User.findByIdAndUpdate( id,
@@ -210,6 +210,31 @@ router.patch('/:userId/changePass', (req, res, next) => {
         .catch( err => {
             res.status(500).json({
                 message: `Error: ${err}. Não foi possível alterar a senha.`
+            })
+        })
+})
+
+router.patch('/:userId/changeProfileImage', upload.single('profileImage'), (req, res, next) => {
+    const id = req.params.userId
+
+    User.findByIdAndUpdate( id,
+        { $set: { profileImage: req.file.path }},
+        { new: true })
+        .then( result => {
+            console.log(result)
+            res.status(200).json({
+                message: `Profile image changed from user ${result.user}!`,
+                request: {
+                    type: 'GET/',
+                    url: `/users/${result.user}`
+                }
+            })
+        })
+        .catch( err => {
+            console.log(err)
+            res.status(500).json({
+                error: err,
+                message: `User by ID:${req.params.userId} not found OR Cannot change profile image :(`
             })
         })
 })
