@@ -108,4 +108,32 @@ router.delete('/:passId', (req, res, next) => {
         })
 })
 
+router.patch('/:userId/changePass', (req, res, next) => {
+    const id = req.params.userId
+    const pass = req.body.password
+
+    if ( pass && pass === "" || pass.length < 6) {
+        return res.status(500).json({
+            message: `Cannot change to ${pass} because it cannot be empty or less than 6 characters`
+        })
+    }
+    const newPass = bcrypt.hashSync(pass, 10)
+
+    User.findByIdAndUpdate(id ,
+        { $set: { password: newPass }},
+        { new: true })
+        .then( result => {
+            console.log(`\n${result}\n`)
+            res.status(200).json({
+                message: `Password changed from user ${result.user}`,
+            })
+        })
+        .catch( err => {
+            res.status(500).json({
+                erro: err,
+                message: `User by ID:${req.params.userId} not found OR Cannot change pass :(`
+            })
+        })
+})
+
 module.exports = router
