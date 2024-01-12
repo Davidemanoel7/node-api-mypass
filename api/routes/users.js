@@ -73,7 +73,7 @@ router.post('/', (req, res, next) => {
 
     if ( pass && pass === "" || pass.length < 6) {
         return res.status(500).json({
-            message: `Senha informada (${pass}) não pode ser vazia ou ter menos de 6 caracteres.`
+            message: `Cannot create pass:${pass} because its empty or less than 6 characters`
         })
     }
     const hashedPass = bcrypt.hashSync(pass, 10)
@@ -107,7 +107,8 @@ router.post('/', (req, res, next) => {
             err => {
                 console.log(err)
                 res.status(500).json({
-                    error: `${err}: Já existe um usuário com o username ou email informado...`
+                    error: err,
+                    message: `User by ${req.body.user} or ${req.body.email} already exists`
                 })
             }
         )
@@ -163,7 +164,7 @@ router.patch('/:userId', (req, res, next) => {
                         })
                     })
                     .catch( err => res.status(500).json({
-                        message: `Não foi possível atualizar os dados...`,
+                        message: `User not found by ID:${req.params.userId}...`,
                         error: err
                     }))
 })
@@ -193,7 +194,7 @@ router.patch('/:userId/changePass', (req, res, next) => {
 
     if ( pass && pass === "" || pass.length < 6) {
         return res.status(500).json({
-            message: `Senha informada (${pass}) não pode ser vazia ou ter menos de 6 caracteres.`
+            message: `Cannot change to ${pass} because it cannot be empty or less than 6 characters`
         })
     }
     const newPass = bcrypt.hashSync(pass, 10)
@@ -209,7 +210,8 @@ router.patch('/:userId/changePass', (req, res, next) => {
         })
         .catch( err => {
             res.status(500).json({
-                message: `Error: ${err}. Não foi possível alterar a senha.`
+                erro: err,
+                message: `User by ID:${req.params.userId} not found OR Cannot change pass :(`
             })
         })
 })
