@@ -43,14 +43,16 @@ router.get('/', (req, res, next) => {
             const response = {
                 count: docs.length,
                 users: docs.map( doc => {
-                    return {
-                        _id: doc._id,
-                        name: doc.name,
-                        user: doc.user,
-                        email: doc.email,
-                        request: {
-                            type: "GET",
-                            url: `/users/${doc.user}`
+                    if ( doc.living ) {
+                        return {
+                            _id: doc._id,
+                            name: doc.name,
+                            user: doc.user,
+                            email: doc.email,
+                            request: {
+                                type: "GET",
+                                url: `/users/${doc.user}`
+                            }
                         }
                     }
                 })
@@ -67,61 +69,56 @@ router.get('/', (req, res, next) => {
         })
 })
 
-router.post('/', (req, res, next) => {
+router.post('/signup', (req, res, next) => {
 
-    const pass = req.body.password
-
-    if ( pass && pass === "" || pass.length < 6) {
-        return res.status(500).json({
-            message: `Cannot create pass:${pass} because its empty or less than 6 characters`
-        })
-    }
-    const hashedPass = bcrypt.hashSync(pass, 10)
-
-    const user = new User({
-        _id: new mongoose.Types.ObjectId(),
-        name: req.body.name,
-        user: req.body.user,
-        email: req.body.email,
-        password: hashedPass,
-        // profileImage: req.file.path
-    })
-    user.save()
-        .then( result => {
-            console.log(result)
-            res.status(201).json({
-                massage: `Created user ${result.user} successfully`,
-                createduser: {
-                    id: result._id,
-                    name: result.name,
-                    user: result.user,
-                    email: result.email,
-                    request: {
-                        type: "GET",
-                        url: `users/${result.user}/`,
-                    }
-                },
+    bcrypt.hash(req.body.password, 10, (err, hash) => {
+        if (err) {
+            return res.status(500).json({
+                error: err,
             })
-        })
-        .catch(
-            err => {
-                console.log(err)
-                res.status(500).json({
-                    error: err,
-                    message: `User by ${req.body.user} or ${req.body.email} already exists`
+        } else {
+            const user = new User({
+                _id: new mongoose.Types.ObjectId(),
+                name: req.body.name,
+                user: req.body.user,
+                email: req.body.email,
+                password: hash,
+            });
+            user.save()
+                .then( result => {
+                    console.log(result)
+                    res.status(201).json({
+                        massage: `Created user ${result.user} successfully`,
+                        createduser: {
+                            id: result._id,
+                            name: result.name,
+                            user: result.user,
+                            email: result.email,
+                            request: {
+                                type: "GET",
+                                url: `users/${result.user}/`,
+                            }
+                        },
+                    })
                 })
-            }
-        )
+                .catch( err => {
+                    console.log(err)
+                    res.status(500).json({
+                        error: err,
+                        message: `Cannot save this user... please try again :(`
+                    })
+                })
+        }})
 })
 
-router.get('/:user', (req, res, next) => {
-    const usr = req.params.user
+router.get('/:userId', (req, res, next) => {
+    const usr = req.params.userId
 
     User.find({user: usr})
-        .select('_id name user email password profileImage')
+        .select('_id name user email password profileImage living')
         .exec()
         .then( doc => {
-            if ( doc ) {
+            if ( doc && doc.living ) {
                 res.status(200).json({
                     user: doc,
                     requests: {
@@ -209,6 +206,32 @@ router.patch('/:userId/changeProfileImage', upload.single('profileImage'), (req,
             res.status(500).json({
                 error: err,
                 message: `User by ID:${req.params.userId} not found OR Cannot change profile image :(`
+            })
+        })
+})
+
+router.patch('/inactivate/:userId/', (req, res, next) => {
+    const id = req.params.userId
+
+    User.findByIdAndUpdate(id,
+        { $set: { living: false }},
+        { new: true })
+        .then( usr => {
+            if (!usr) {
+                return res.status(404).json({
+                    message: 'User not found'
+                })
+            }
+
+            console.log(usr)
+            res.status(200).json({
+                user: usr,
+                message: `User ${usr.name} inactivated successfully!`
+            })
+        })
+        .catch( err => {
+            res.status(500).json({
+                error: err
             })
         })
 })

@@ -15,15 +15,20 @@ const userSchema = new mongoose.Schema({
         unique: true,
         required: true,
         type: String,
+        match: /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/
     },
     password: {
         required: true,
         type: String
     },
     profileImage: {
-        require: false,
+        required: false,
         type: String
+    },
+    living: {
+        type: Boolean,
+        default: true
     }
-})
+});
 
 module.exports = mongoose.model('User', userSchema)
