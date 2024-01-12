@@ -67,51 +67,46 @@ router.get('/', (req, res, next) => {
         })
 })
 
-router.post('/', (req, res, next) => {
+router.post('/signup', (req, res, next) => {
 
-    const pass = req.body.password
-
-    if ( pass && pass === "" || pass.length < 6) {
-        return res.status(500).json({
-            message: `Cannot create pass:${pass} because its empty or less than 6 characters`
-        })
-    }
-    const hashedPass = bcrypt.hashSync(pass, 10)
-
-    const user = new User({
-        _id: new mongoose.Types.ObjectId(),
-        name: req.body.name,
-        user: req.body.user,
-        email: req.body.email,
-        password: hashedPass,
-        // profileImage: req.file.path
-    })
-    user.save()
-        .then( result => {
-            console.log(result)
-            res.status(201).json({
-                massage: `Created user ${result.user} successfully`,
-                createduser: {
-                    id: result._id,
-                    name: result.name,
-                    user: result.user,
-                    email: result.email,
-                    request: {
-                        type: "GET",
-                        url: `users/${result.user}/`,
-                    }
-                },
+    bcrypt.hash(req.body.password, 10, (err, hash) => {
+        if (err) {
+            return res.status(500).json({
+                error: err,
             })
-        })
-        .catch(
-            err => {
-                console.log(err)
-                res.status(500).json({
-                    error: err,
-                    message: `User by ${req.body.user} or ${req.body.email} already exists`
+        } else {
+            const user = new User({
+                _id: new mongoose.Types.ObjectId(),
+                name: req.body.name,
+                user: req.body.user,
+                email: req.body.email,
+                password: hash,
+            });
+            user.save()
+                .then( result => {
+                    console.log(result)
+                    res.status(201).json({
+                        massage: `Created user ${result.user} successfully`,
+                        createduser: {
+                            id: result._id,
+                            name: result.name,
+                            user: result.user,
+                            email: result.email,
+                            request: {
+                                type: "GET",
+                                url: `users/${result.user}/`,
+                            }
+                        },
+                    })
                 })
-            }
-        )
+                .catch( err => {
+                    console.log(err)
+                    res.status(500).json({
+                        error: err,
+                        message: `Cannot save this user... please try again :(`
+                    })
+                })
+        }})
 })
 
 router.get('/:user', (req, res, next) => {
@@ -126,7 +121,7 @@ router.get('/:user', (req, res, next) => {
                     user: doc,
                     requests: {
                         type: "PATCH/DELETE",
-                        url: `/users/${doc.map(e => e._id)}`
+                        url: `/users/${doc.map(e => e.user)}`
                     }
                 })
             } else {
