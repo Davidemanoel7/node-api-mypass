@@ -36,26 +36,13 @@ const upload = multer({
 //não usar /users, pois em app.js já é referenciado.
 // caso use, o end-point seria: /users/users/
 router.get('/', (req, res, next) => {
-    User.find()
+    User.find({ living: true })
         .select('_id name user email')
         .exec()
         .then( docs => {
             const response = {
                 count: docs.length,
-                users: docs.map( doc => {
-                    if ( doc.living ) {
-                        return {
-                            _id: doc._id,
-                            name: doc.name,
-                            user: doc.user,
-                            email: doc.email,
-                            request: {
-                                type: "GET",
-                                url: `/users/${doc.user}`
-                            }
-                        }
-                    }
-                })
+                users: docs
             }
             res.status(200).json({
                 user: response,
@@ -111,10 +98,10 @@ router.post('/signup', (req, res, next) => {
         }})
 })
 
-router.get('/:userId', (req, res, next) => {
-    const usr = req.params.userId
+router.get('/:userName', (req, res, next) => {
+    const usr = req.params.userName
 
-    User.find({user: usr})
+    User.findOne({user: usr})
         .select('_id name user email password profileImage living')
         .exec()
         .then( doc => {
@@ -123,7 +110,7 @@ router.get('/:userId', (req, res, next) => {
                     user: doc,
                     requests: {
                         type: "PATCH/DELETE",
-                        url: `/users/${doc.map(e => e._id)}`
+                        url: `/users/${doc._id}`
                     }
                 })
             } else {
@@ -134,7 +121,7 @@ router.get('/:userId', (req, res, next) => {
         })
         .catch( err => {
             console.log(err)
-            res.status(500).json( {error: err} )
+            res.status(500).json( {error: err || 'Internal server error...'} )
         })
 })
 
@@ -227,6 +214,32 @@ router.patch('/inactivate/:userId/', (req, res, next) => {
             res.status(200).json({
                 user: usr,
                 message: `User ${usr.name} inactivated successfully!`
+            })
+        })
+        .catch( err => {
+            res.status(500).json({
+                error: err
+            })
+        })
+})
+
+router.patch('/activate/:userId/', (req, res, next) => {
+    const id = req.params.userId
+
+    User.findByIdAndUpdate(id,
+        { $set: { living: true }},
+        { new: true })
+        .then( usr => {
+            if (!usr) {
+                return res.status(404).json({
+                    message: 'User not found'
+                })
+            }
+
+            console.log(usr)
+            res.status(200).json({
+                user: usr,
+                message: `Welcome back! ${usr.name} is activated successfully!`
             })
         })
         .catch( err => {
