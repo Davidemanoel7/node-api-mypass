@@ -111,10 +111,10 @@ router.post('/signup', (req, res, next) => {
         }})
 })
 
-router.get('/:userId', (req, res, next) => {
-    const usr = req.params.userId
+router.get('/:userName', (req, res, next) => {
+    const usr = req.params.userName
 
-    User.find({user: usr})
+    User.findOne({user: usr})
         .select('_id name user email password profileImage living')
         .exec()
         .then( doc => {
@@ -123,7 +123,7 @@ router.get('/:userId', (req, res, next) => {
                     user: doc,
                     requests: {
                         type: "PATCH/DELETE",
-                        url: `/users/${doc.map(e => e._id)}`
+                        url: `/users/${doc._id}`
                     }
                 })
             } else {
@@ -134,7 +134,7 @@ router.get('/:userId', (req, res, next) => {
         })
         .catch( err => {
             console.log(err)
-            res.status(500).json( {error: err} )
+            res.status(500).json( {error: err || 'Internal server error...'} )
         })
 })
 
