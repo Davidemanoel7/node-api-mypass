@@ -4,6 +4,10 @@ const { ObjectId } = require('mongodb');
 
 const passSchema = mongoose.Schema({
     _id: mongoose.Schema.Types.ObjectId,
+    url: {
+        required: false,
+        type: String
+    },
     description: {
         required: false,
         type: String
@@ -12,10 +16,14 @@ const passSchema = mongoose.Schema({
         required: true,
         type: String
     },
+    cryptKey: {
+        required: true,
+        type: String
+    },
     userId: {
         type: ObjectId,
         ref: User,
-        required: true // => Necessário?? Testar um POST sem informar este campo e ver o efeito colateral...
+        required: true
     }
 })
 

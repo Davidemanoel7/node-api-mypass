@@ -9,6 +9,8 @@ const User = require('../models/users')
 
 const bcrypt = require('bcryptjs')
 
+const crypt = require('../../services/crypt.js')
+
 //não usar /pass, pois em app.js já é referenciado.
 // caso use, o end-point seria: /pass/pass/
 router.get('/', (req, res, next) => {
@@ -23,38 +25,45 @@ router.get('/', (req, res, next) => {
         .catch( err => {
             console.log(err)
             res.status(500).json({
-                error: err
+                error: err || 'Internal server error'
             })
         })
 })
 
-router.post('/', (req, res, next) => {
-    User.findById(req.body.userId)
+router.post('/:userId', (req, res, next) => {
+    const id = req.params.userId
+
+    User.findOne({_id: id, living: true})
         .then( user => {
             if (!user){
                 return res.status(404).json({
-                    message: `User not found with ID ${req.body.userId}`
+                    message: `User not found with ID ${id}`
                 })
             } else {
-                bcrypt.hash(req.body.password, 10)
-                    .then( hashedPass => {
-                        const newPass = new Pass({
-                            _id: new mongoose.Types.ObjectId(),
-                            description: req.body.description,
-                            password: hashedPass,
-                            userId: req.body.userId
+                const crypted = crypt.encryptString(req.body.password);
+                const newPass = new Pass({
+                    _id: new mongoose.Types.ObjectId(),
+                    url: req.body.url,
+                    description: req.body.description,
+                    password: crypted.encryptedText,
+                    userId: user._id,
+                    cryptKey: crypted.iv
+                })
+                newPass.save()
+                    .then( result => {
+                        console.log(result)
+                        res.status(201).json({
+                            message: `Password created sucessfully for user ${user.user}`,
+                            createdpass: {
+                                id: result._id,
+                                description: result.description,
+                                userId: result.userId
+                            }
                         })
-                        newPass.save()
-                        .then( result => {
-                            console.log(result)
-                            res.status(201).json({
-                                message: `Password created sucessfully for user ${user.user}`,
-                                createdpass: {
-                                    id: result._id,
-                                    description: result.description,
-                                    userId: result.userId
-                                }
-                            })
+                    })
+                    .catch( err => {
+                        res.status(500).json({
+                            error: err
                         })
                     })
             }
@@ -68,24 +77,86 @@ router.post('/', (req, res, next) => {
 })
 
 // GET all passwords with userId
-router.get('/:userId', (req, res, next) => {
+router.get('/alluserpass/:userId', (req, res, next) => {
     const id = req.params.userId
     
-    Pass.find({userId: id})
-        .select('_id description password userId')
+    User.findOne({_id: id, living: true })
         .exec()
-        .then( doc => {
-            if ( doc ) {
-                res.status(200).json( doc )
+        .then( user => {
+            if ( user ) {
+                Pass.find({userId: id})
+                    .select('_id description url password cryptKey userId')
+                    .exec()
+                    .then( docs => {
+                        const response = docs.map( doc => {
+                            const encrypted = {
+                                encryptedText: doc.password,
+                                iv: doc.cryptKey
+                            }
+                            const crypted = crypt.decryptString(encrypted);
+                            return {
+                                pass: {
+                                    id: doc._id,
+                                    url: doc.url,
+                                    description: doc.description,
+                                    password: crypted,
+                                }
+                            }
+                        })
+                        if ( docs ) {
+                            res.status(200).json({
+                                response
+                            })
+                        } else {
+                            res.status(404).json({
+                                message: `Not found pass or invalid entry for user ${user.user}`
+                            })
+                        }
+                    })
+                    .catch( err => {
+                        console.log(err)
+                        res.status(500).json({error: err || '[Pass] Internal server error'})
+                    });
             } else {
                 res.status(404).json({
-                message: `Not found or invalid entry for provided ID ${req.params.userId}`
-                })
+                    message: `Not found or invalid entry for provided ID ${req.params.userId}`
+                });
             }
         })
         .catch( err => {
             console.log(err)
-            res.status(500).json({error: err})
+            res.status(500).json({
+                error: err || '[User] Internal server error'
+            })
+        })
+})
+
+router.get('/:passId/', (req, res, next) => {
+    const id = req.params.passId
+
+    Pass.findOne({_id: id})
+        .select('_id description url password cryptKey userId')
+        .exec()
+        .then( pass => {
+            const encrypted = {
+                encryptedText: pass.password ,
+                iv: pass.cryptKey
+            }
+            const crypted = crypt.decryptString(encrypted);
+            res.status(200).json({
+                pass: {
+                    id: pass._id,
+                    url: pass.url,
+                    description: pass.description,
+                    password: crypted
+                }
+            });
+        })
+        .catch( err => {
+            console.log(err)
+            res.status(500).json({
+                error: err
+            });
         })
 })
 
@@ -108,24 +179,24 @@ router.delete('/:passId', (req, res, next) => {
         })
 })
 
-router.patch('/:userId/changePass', (req, res, next) => {
-    const id = req.params.userId
+router.patch('/changePass/:passId/', (req, res, next) => {
+    const id = req.params.passId
     const pass = req.body.password
 
     if ( pass && pass === "" || pass.length < 6) {
         return res.status(500).json({
-            message: `Cannot change to ${pass} because it cannot be empty or less than 6 characters`
+            message: `Cannot change to '${pass}' because it cannot be empty or less than 6 characters`
         })
     }
-    const newPass = bcrypt.hashSync(pass, 10)
+    const newPass = crypt.encryptString(pass);
 
-    User.findByIdAndUpdate(id ,
-        { $set: { password: newPass }},
+    Pass.findByIdAndUpdate( id ,
+        { $set: { password: newPass.encryptedText, cryptKey: newPass.iv }},
         { new: true })
         .then( result => {
             console.log(`\n${result}\n`)
             res.status(200).json({
-                message: `Password changed from user ${result.user}`,
+                message: `Password changed successfully!`,
             })
         })
         .catch( err => {
