@@ -32,7 +32,13 @@ router.get('/', (req, res, next) => {
 
 router.post('/:userId', (req, res, next) => {
     const id = req.params.userId
+    const pass = req.body.password
 
+    if ( pass && pass === "" || pass.length < 6 || pass > 20 ) {
+        return res.status(500).json({
+            message: `It is not possible to register '${pass}' because cannot be empty and must be between 6 and 20 characters`
+        })
+    }
     User.findOne({_id: id, living: true})
         .then( user => {
             if (!user){
@@ -40,7 +46,7 @@ router.post('/:userId', (req, res, next) => {
                     message: `User not found with ID ${id}`
                 })
             } else {
-                const crypted = crypt.encryptString(req.body.password);
+                const crypted = crypt.encryptString(pass);
                 const newPass = new Pass({
                     _id: new mongoose.Types.ObjectId(),
                     url: req.body.url,
@@ -183,7 +189,7 @@ router.patch('/changePass/:passId/', (req, res, next) => {
     const id = req.params.passId
     const pass = req.body.password
 
-    if ( pass && pass === "" || pass.length < 6) {
+    if ( pass && pass === "" || pass.length < 6 || pass > 20 ) {
         return res.status(500).json({
             message: `Cannot change to '${pass}' because it cannot be empty or less than 6 characters`
         })
