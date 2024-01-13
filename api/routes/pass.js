@@ -23,7 +23,7 @@ router.get('/', (req, res, next) => {
         .catch( err => {
             console.log(err)
             res.status(500).json({
-                error: err
+                error: err || 'Internal server error'
             })
         })
 })
@@ -71,21 +71,35 @@ router.post('/', (req, res, next) => {
 router.get('/:userId', (req, res, next) => {
     const id = req.params.userId
     
-    Pass.find({userId: id})
-        .select('_id description password userId')
+    User.findOne({_id: id, living: true })
         .exec()
-        .then( doc => {
-            if ( doc ) {
-                res.status(200).json( doc )
+        .then( user => {
+            if ( user ) {
+                Pass.find({userId: id})
+                    .select('_id description password userId')
+                    .exec()
+                    .then( doc => {
+                        if ( doc ) {
+                            res.status(200).json( doc )
+                        } else {
+                            res.status(404).json({
+                                message: `Not found pass or invalid entry for user ${user.user}`
+                            })
+                        }
+                    })
+                    .catch( err => {
+                        res.status(500).json({error: err || '[Pass] Internal server error'})
+                    });
             } else {
                 res.status(404).json({
-                message: `Not found or invalid entry for provided ID ${req.params.userId}`
-                })
+                    message: `Not found or invalid entry for provided ID ${req.params.userId}`
+                });
             }
         })
         .catch( err => {
-            console.log(err)
-            res.status(500).json({error: err})
+            res.status(500).json({
+                error: err || '[User] Internal server error'
+            })
         })
 })
 
