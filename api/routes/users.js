@@ -223,4 +223,30 @@ router.patch('/inactivate/:userId/', (req, res, next) => {
         })
 })
 
+router.patch('/activate/:userId/', (req, res, next) => {
+    const id = req.params.userId
+
+    User.findByIdAndUpdate(id,
+        { $set: { living: true }},
+        { new: true })
+        .then( usr => {
+            if (!usr) {
+                return res.status(404).json({
+                    message: 'User not found'
+                })
+            }
+
+            console.log(usr)
+            res.status(200).json({
+                user: usr,
+                message: `Welcome back! ${usr.name} is activated successfully!`
+            })
+        })
+        .catch( err => {
+            res.status(500).json({
+                error: err
+            })
+        })
+})
+
 module.exports = router
