@@ -9,6 +9,8 @@ const User = require('../models/users')
 
 const bcrypt = require('bcryptjs')
 
+const crypt = require('../../services/crypt.js')
+
 //não usar /pass, pois em app.js já é referenciado.
 // caso use, o end-point seria: /pass/pass/
 router.get('/', (req, res, next) => {
@@ -28,33 +30,40 @@ router.get('/', (req, res, next) => {
         })
 })
 
-router.post('/', (req, res, next) => {
-    User.findById(req.body.userId)
+router.post('/:userId', (req, res, next) => {
+    const id = req.params.userId
+
+    User.findOne({_id: id, living: true})
         .then( user => {
             if (!user){
                 return res.status(404).json({
-                    message: `User not found with ID ${req.body.userId}`
+                    message: `User not found with ID ${id}`
                 })
             } else {
-                bcrypt.hash(req.body.password, 10)
-                    .then( hashedPass => {
-                        const newPass = new Pass({
-                            _id: new mongoose.Types.ObjectId(),
-                            description: req.body.description,
-                            password: hashedPass,
-                            userId: req.body.userId
+                const crypted = crypt.encryptString(req.body.password);
+                const newPass = new Pass({
+                    _id: new mongoose.Types.ObjectId(),
+                    url: req.body.url,
+                    description: req.body.description,
+                    password: crypted.encryptedText,
+                    userId: user._id,
+                    cryptKey: crypted.iv
+                })
+                newPass.save()
+                    .then( result => {
+                        console.log(result)
+                        res.status(201).json({
+                            message: `Password created sucessfully for user ${user.user}`,
+                            createdpass: {
+                                id: result._id,
+                                description: result.description,
+                                userId: result.userId
+                            }
                         })
-                        newPass.save()
-                        .then( result => {
-                            console.log(result)
-                            res.status(201).json({
-                                message: `Password created sucessfully for user ${user.user}`,
-                                createdpass: {
-                                    id: result._id,
-                                    description: result.description,
-                                    userId: result.userId
-                                }
-                            })
+                    })
+                    .catch( err => {
+                        res.status(500).json({
+                            error: err
                         })
                     })
             }
