@@ -36,26 +36,13 @@ const upload = multer({
 //não usar /users, pois em app.js já é referenciado.
 // caso use, o end-point seria: /users/users/
 router.get('/', (req, res, next) => {
-    User.find()
+    User.find({ living: true })
         .select('_id name user email')
         .exec()
         .then( docs => {
             const response = {
                 count: docs.length,
-                users: docs.map( doc => {
-                    if ( doc.living ) {
-                        return {
-                            _id: doc._id,
-                            name: doc.name,
-                            user: doc.user,
-                            email: doc.email,
-                            request: {
-                                type: "GET",
-                                url: `/users/${doc.user}`
-                            }
-                        }
-                    }
-                })
+                users: docs
             }
             res.status(200).json({
                 user: response,
