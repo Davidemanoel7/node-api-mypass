@@ -77,7 +77,7 @@ router.post('/:userId', (req, res, next) => {
 })
 
 // GET all passwords with userId
-router.get('/:userId', (req, res, next) => {
+router.get('/alluserpass/:userId', (req, res, next) => {
     const id = req.params.userId
     
     User.findOne({_id: id, living: true })
@@ -85,11 +85,28 @@ router.get('/:userId', (req, res, next) => {
         .then( user => {
             if ( user ) {
                 Pass.find({userId: id})
-                    .select('_id description password userId')
+                    .select('_id description url password cryptKey userId')
                     .exec()
-                    .then( doc => {
-                        if ( doc ) {
-                            res.status(200).json( doc )
+                    .then( docs => {
+                        const response = docs.map( doc => {
+                            const encrypted = {
+                                encryptedText: doc.password,
+                                iv: doc.cryptKey
+                            }
+                            const crypted = crypt.decryptString(encrypted);
+                            return {
+                                pass: {
+                                    id: doc._id,
+                                    url: doc.url,
+                                    description: doc.description,
+                                    password: crypted,
+                                }
+                            }
+                        })
+                        if ( docs ) {
+                            res.status(200).json({
+                                response
+                            })
                         } else {
                             res.status(404).json({
                                 message: `Not found pass or invalid entry for user ${user.user}`
@@ -97,6 +114,7 @@ router.get('/:userId', (req, res, next) => {
                         }
                     })
                     .catch( err => {
+                        console.log(err)
                         res.status(500).json({error: err || '[Pass] Internal server error'})
                     });
             } else {
@@ -106,9 +124,39 @@ router.get('/:userId', (req, res, next) => {
             }
         })
         .catch( err => {
+            console.log(err)
             res.status(500).json({
                 error: err || '[User] Internal server error'
             })
+        })
+})
+
+router.get('/:passId/', (req, res, next) => {
+    const id = req.params.passId
+
+    Pass.findOne({_id: id})
+        .select('_id description url password cryptKey userId')
+        .exec()
+        .then( pass => {
+            const encrypted = {
+                encryptedText: pass.password ,
+                iv: pass.cryptKey
+            }
+            const crypted = crypt.decryptString(encrypted);
+            res.status(200).json({
+                pass: {
+                    id: pass._id,
+                    url: pass.url,
+                    description: pass.description,
+                    password: crypted
+                }
+            });
+        })
+        .catch( err => {
+            console.log(err)
+            res.status(500).json({
+                error: err
+            });
         })
 })
 
