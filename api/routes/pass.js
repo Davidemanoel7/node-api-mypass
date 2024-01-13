@@ -179,24 +179,24 @@ router.delete('/:passId', (req, res, next) => {
         })
 })
 
-router.patch('/:userId/changePass', (req, res, next) => {
-    const id = req.params.userId
+router.patch('/changePass/:passId/', (req, res, next) => {
+    const id = req.params.passId
     const pass = req.body.password
 
     if ( pass && pass === "" || pass.length < 6) {
         return res.status(500).json({
-            message: `Cannot change to ${pass} because it cannot be empty or less than 6 characters`
+            message: `Cannot change to '${pass}' because it cannot be empty or less than 6 characters`
         })
     }
-    const newPass = bcrypt.hashSync(pass, 10)
+    const newPass = crypt.encryptString(pass);
 
-    User.findByIdAndUpdate(id ,
-        { $set: { password: newPass }},
+    Pass.findByIdAndUpdate( id ,
+        { $set: { password: newPass.encryptedText, cryptKey: newPass.iv }},
         { new: true })
         .then( result => {
             console.log(`\n${result}\n`)
             res.status(200).json({
-                message: `Password changed from user ${result.user}`,
+                message: `Password changed successfully!`,
             })
         })
         .catch( err => {
