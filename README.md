@@ -7,6 +7,7 @@
 
 ## Descrição :key:
 O projeto 'mypass' é uma API REST desenvolvida em Node.js que permite armazenar senhas com segurança. Esta API foi criada para simplificar o processo de gerenciamento de senhas e fornecer uma maneira segura de armazenar e recuperar informações confidenciais.
+
 ## Funcionalidades :computer:
 - Criação, leitura, atualização e exclusão de senhas.
 - Autenticação de usuários para garantir a segurança dos dados (JWT).
@@ -16,20 +17,23 @@ O projeto 'mypass' é uma API REST desenvolvida em Node.js que permite armazenar
 Certifique-se de ter as seguintes ferramentas instaladas em seu sistema:
 - [Node.js](https://nodejs.org/)
 - [npm](https://www.npmjs.com/) (gerenciador de pacotes do Node.js)
-- Banco de dados (por exemplo, MongoDB, PostgreSQL, ou SQLite) (Estou usando o MongoDB com mongoose)
+- Banco de dados (por exemplo, MongoDB, PostgreSQL, ou SQLite) (Estou usando o MongoDB com mongoose).
 
 ## Configuração :wrench:
 1. Clone este repositório: `git clone https://github.com/Davidemanoel7/mypass.git`
 2. Navegue até o diretório do projeto: `cd mypass`
 3. Instale as dependências: `npm install`
-4. Configure as variáveis de ambiente no arquivo `.env` conforme necessário.
+4. Configure as variáveis de ambiente em um arquivo `.env`
 
 ## Uso :white_check_mark:
 1. Inicie o servidor: `npm start`
-2. Acesse a API em `http://localhost:3000` (ou outro porto configurado).
+2. Acesse a API em `http://localhost:3000` (ou outra porta configurado).
 
 ## Autenticação (em construção) :lock:
 A autenticação de usuário será necessária para acessar algumas rotas da API.
+
+## Documentação :page_facing_up:
+[Neste arquivo](https://github.com/Davidemanoel7/node-api-mypass/blob/main/learn.md) contém a documentação da API contendo as endpoints e outras informações.
 
 ## Contribuição :bulb:
 
