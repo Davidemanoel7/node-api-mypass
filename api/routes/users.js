@@ -58,7 +58,15 @@ router.get('/', (req, res, next) => {
 
 router.post('/signup', (req, res, next) => {
 
-    bcrypt.hash(req.body.password, 10, (err, hash) => {
+    const pass = req.body.password
+
+    if ( pass && pass === "" || pass.length < 6 || pass > 20 ) {
+        return res.status(500).json({
+            message: `It is not possible to register '${pass}' because cannot be empty and must be between 6 and 20 characters`
+        })
+    }
+
+    bcrypt.hash( pass, 10, (err, hash) => {
         if (err) {
             return res.status(500).json({
                 error: err,
@@ -195,6 +203,44 @@ router.patch('/:userId/changeProfileImage', upload.single('profileImage'), (req,
                 message: `User by ID:${req.params.userId} not found OR Cannot change profile image :(`
             })
         })
+})
+
+router.patch('/:userId/changeUserPass/', (req, res, next) => {
+    const id = req.params.userId
+    const pass = req.body.password
+
+    if ( pass && pass === "" || pass.length < 6 || pass > 20 ) {
+        return res.status(500).json({
+            message: `It is not possible to register '${pass}' because cannot be empty and must be between 6 and 20 characters`
+        })
+    }
+    bcrypt.hash( pass , 10, (err, obj) => {
+        if (err) {
+            return res.status(500).json({
+                error: err
+            })
+        }
+        if ( obj ) {
+            console.log(obj )
+            User.findByIdAndUpdate( id ,
+                { $set: { password: obj} },
+                { new: true }
+            )
+            .then( result =>{
+                console.log(result)
+                res.status(200).json({
+                    message: `Password changed successfully!`
+                })
+            })
+            .catch( err => {
+                console.log(err)
+                res.status(500).json({
+                    error: err
+                })
+            })
+        }
+    })
+
 })
 
 router.patch('/inactivate/:userId/', (req, res, next) => {
