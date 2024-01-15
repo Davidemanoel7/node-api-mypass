@@ -26,11 +26,11 @@ router.get('/signin/', (req, res, next) => {
                         })
                     } else {
                         const token = jwt.sign(
-                            { email: user.email, userId: user._id },
+                            { userId: user._id, user: user.user, email: user.email },
                             process.env.JWT_KEY,
                             { expiresIn: '1h' }
                         )
-                        console.log(`\ntoken: ${token}\n`)
+                        // console.log(`\t\nLogged! jwt token: ${token}\n`)
                         res.status(200).json({
                             message: `Logged!`,
                             token: token
