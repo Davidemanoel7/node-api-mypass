@@ -7,7 +7,13 @@ const mongoose = require('mongoose')
 const User = require('../models/users')
 const bcrypt = require('bcryptjs')
 
+const { body, validationResult } = require('express-validator')
+
+const checkAuth = require('../middleware/check-auth')
+
 const multer = require('multer');
+const { options } = require('./auth')
+
 
 const storage = multer.diskStorage({
     destination: (req, file, callback) => {
@@ -25,6 +31,7 @@ const fileFilter = (req, file, callback) => {
         callback(new Error('image type or size not supported'), false)
     }
 }
+
 const upload = multer({
     storage: storage,
     limits: {
@@ -134,8 +141,20 @@ router.get('/:userName', (req, res, next) => {
 })
 
 // partial changes on user.schema
-router.patch('/:userId', (req, res, next) => {
+router.patch('/:userId', checkAuth, [
+        body('name').optional().isString().isLength({ min: 4, max: 60 }),
+        body('user').optional().isString().isLength({ min: 4, max: 20 }),
+        body('email').optional().isEmail(),
+    ], (req, res, next) => {
     const id = req.params.userId
+
+    const errors = validationResult(req);
+
+    if ( !errors.isEmpty() ) {
+        return res.status(422).json({
+            errors: errors.array()
+        });
+    }
 
     User.findByIdAndUpdate( id,
                     { $set: {
