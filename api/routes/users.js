@@ -43,7 +43,7 @@ const upload = multer({
 //não usar /users, pois em app.js já é referenciado.
 // caso use, o end-point seria: /users/users/
 router.get('/', checkAdminAuth, (req, res, next) => {
-    User.find({ living: true })
+    User.find()
         .select('_id name user email')
         .exec()
         .then( docs => {
