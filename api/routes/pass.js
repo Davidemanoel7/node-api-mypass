@@ -10,6 +10,7 @@ const User = require('../models/users')
 const bcrypt = require('bcryptjs')
 
 const crypt = require('../../services/crypt.js')
+const { body, validationResult } = require('express-validator')
 
 //não usar /pass, pois em app.js já é referenciado.
 // caso use, o end-point seria: /pass/pass/
@@ -30,15 +31,23 @@ router.get('/', (req, res, next) => {
         })
 })
 
-router.post('/:userId', (req, res, next) => {
+router.post('/:userId', [
+        body('password').isString().isLength({ min:4, max:20 })
+    ], (req, res, next) => {
+
     const id = req.params.userId
     const pass = req.body.password
 
-    if ( pass && pass === "" || pass.length < 6 || pass > 20 ) {
-        return res.status(500).json({
-            message: `It is not possible to register '${pass}' because cannot be empty and must be between 6 and 20 characters`
+    const validRes = validationResult(req);
+
+    if ( !validRes.isEmpty() ) {
+        return res.status(422).json({
+            message: `Oops... error in ${validRes.errors[0].path} field with value:${validRes.errors[0].value}. Try again!`,
+            errors: validRes.array()
         })
     }
+
+
     User.findOne({_id: id, living: true})
         .then( user => {
             if (!user){
@@ -47,6 +56,7 @@ router.post('/:userId', (req, res, next) => {
                 })
             } else {
                 const crypted = crypt.encryptString(pass);
+
                 const newPass = new Pass({
                     _id: new mongoose.Types.ObjectId(),
                     url: req.body.url,
@@ -55,6 +65,7 @@ router.post('/:userId', (req, res, next) => {
                     userId: user._id,
                     cryptKey: crypted.iv
                 })
+
                 newPass.save()
                     .then( result => {
                         console.log(result)
@@ -185,15 +196,22 @@ router.delete('/:passId', (req, res, next) => {
         })
 })
 
-router.patch('/changePass/:passId/', (req, res, next) => {
+router.patch('/changePass/:passId/', [
+    body('password').isString().isLength({ min:4, max:20 })
+    ], (req, res, next) => {
+
     const id = req.params.passId
     const pass = req.body.password
 
-    if ( pass && pass === "" || pass.length < 6 || pass > 20 ) {
-        return res.status(500).json({
-            message: `Cannot change to '${pass}' because it cannot be empty or less than 6 characters`
-        })
+    const validRes = validationResult(req);
+
+    if ( !validRes.isEmpty() ) {
+        return res.status(422).json({
+            message: `Oops... error in ${validRes.errors[0].path} field with value:${validRes.errors[0].value}. Try again!`,
+            errors: validRes.array()
+        });
     }
+
     const newPass = crypt.encryptString(pass);
 
     Pass.findByIdAndUpdate( id ,
