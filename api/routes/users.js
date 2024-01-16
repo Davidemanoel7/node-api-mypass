@@ -9,10 +9,10 @@ const bcrypt = require('bcryptjs')
 
 const { body, validationResult } = require('express-validator')
 
-const checkAuth = require('../middleware/check-auth')
+const { checkCommonAuth, checkAdminAuth, checkAllowAuth } = require('../middleware/check-auth')
 
 const multer = require('multer');
-const { options } = require('./auth')
+// const { options } = require('./auth')
 
 
 const storage = multer.diskStorage({
@@ -42,7 +42,7 @@ const upload = multer({
 
 //não usar /users, pois em app.js já é referenciado.
 // caso use, o end-point seria: /users/users/
-router.get('/', (req, res, next) => {
+router.get('/', checkAllowAuth, (req, res, next) => {
     User.find({ living: true })
         .select('_id name user email')
         .exec()
@@ -63,11 +63,13 @@ router.get('/', (req, res, next) => {
         })
 })
 
-router.post('/signup', [
+router.post('/signup',
+    [
         body('name').isString().isLength({ min: 4, max: 60 }),
         body('user').isString().isLength({ min: 4, max: 20 }),
         body('email').isEmail(),
         body('password').isString().isLength({ min: 6, max: 20 }),
+        body('userType').optional().isString().isIn(['common', 'admin'])
     ], (req, res, next) => {
     
     const validRes = validationResult(req);
@@ -91,6 +93,7 @@ router.post('/signup', [
                 user: req.body.user,
                 email: req.body.email,
                 password: hash,
+                userType: req.body.userType
             });
             user.save()
                 .then( result => {
@@ -119,7 +122,7 @@ router.post('/signup', [
         }})
 })
 
-router.get('/:userName', checkAuth, (req, res, next) => {
+router.get('/:userName', checkAllowAuth, (req, res, next) => {
     const usr = req.params.userName
 
     User.findOne({user: usr})
@@ -136,7 +139,7 @@ router.get('/:userName', checkAuth, (req, res, next) => {
                 })
             } else {
                 res.status(404).json({
-                    message: `Not found or invalid entry for provided ID ${req.params.userId}`
+                    message: `User not found or invalid ${usr}`
                 })
             }
         })
@@ -147,7 +150,7 @@ router.get('/:userName', checkAuth, (req, res, next) => {
 })
 
 // partial changes on user.schema
-router.patch('/:userId', checkAuth,
+router.patch('/:userId', checkCommonAuth,
     [
         body('name').optional().isString().isLength({ min: 4, max: 60 }),
         body('user').optional().isString().isLength({ min: 4, max: 20 }),
@@ -187,8 +190,8 @@ router.patch('/:userId', checkAuth,
                         error: err
                     }))
 })
-// Adicionar uma validação tipo ADMIN aqui
-router.delete('/:userId', checkAuth, (req, res, next) => {
+
+router.delete('/:userId', checkAdminAuth, (req, res, next) => {
     const id = req.params.userId
 
     User.findByIdAndDelete({_id: id})
@@ -207,7 +210,7 @@ router.delete('/:userId', checkAuth, (req, res, next) => {
         })
 })
 
-router.patch('/:userId/changeProfileImage',checkAuth,
+router.patch('/:userId/changeProfileImage', checkCommonAuth,
     upload.single('profileImage'), (req, res, next) => {
     const id = req.params.userId
 
@@ -233,13 +236,14 @@ router.patch('/:userId/changeProfileImage',checkAuth,
         })
 })
 
-router.patch('/:userId/changeUserPass/', checkAuth, [
+router.patch('/:userId/changeUserPass/', checkCommonAuth,
+    [
         body('password').isString().isLength({ min: 6, max: 20 })
     ], (req, res, next) => {
 
     const id = req.params.userId
     const pass = req.body.password
-
+        
     const errors = validationResult(req);
 
     if ( !errors.isEmpty() ) {
@@ -274,7 +278,7 @@ router.patch('/:userId/changeUserPass/', checkAuth, [
 
 })
 
-router.patch('/inactivate/:userId/', checkAuth, (req, res, next) => {
+router.patch('/inactivate/:userId/', checkCommonAuth, (req, res, next) => {
     const id = req.params.userId
 
     User.findByIdAndUpdate(id,
@@ -300,7 +304,7 @@ router.patch('/inactivate/:userId/', checkAuth, (req, res, next) => {
         })
 })
 
-router.patch('/activate/:userId/', (req, res, next) => {
+router.patch('/activate/:userId/', checkAdminAuth, (req, res, next) => {
     const id = req.params.userId
 
     User.findByIdAndUpdate(id,
