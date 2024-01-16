@@ -20,13 +20,12 @@ router.get('/signin/', (req, res, next) => {
                 bcrypt.compare(req.body.pass, user.password)
                 .then( valid => {
                     if ( !valid ) {
-                        console.log(`Eq: ${req.body.pass} = ${valid}`)
                         res.status(201).json({
                             message: `Invalid password, try again!`
                         })
                     } else {
                         const token = jwt.sign(
-                            { userId: user._id, user: user.user, email: user.email },
+                            { userId: user._id, user: user.user, email: user.email, userType: user.userType },
                             process.env.JWT_KEY,
                             { expiresIn: '1h' }
                         )
