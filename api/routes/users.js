@@ -210,7 +210,7 @@ router.delete('/:userId', checkAdminAuth, (req, res, next) => {
         })
 })
 
-router.patch('/:userId/changeProfileImage', checkCommonAuth,
+router.patch('/changeProfileImage/:userId', checkCommonAuth,
     upload.single('profileImage'), (req, res, next) => {
     const id = req.params.userId
 
@@ -236,7 +236,7 @@ router.patch('/:userId/changeProfileImage', checkCommonAuth,
         })
 })
 
-router.patch('/:userId/changeUserPass/', checkCommonAuth,
+router.patch('/changeUserPass/:userId', checkCommonAuth,
     [
         body('password').isString().isLength({ min: 6, max: 20 })
     ], (req, res, next) => {
