@@ -63,17 +63,23 @@ router.get('/', (req, res, next) => {
         })
 })
 
-router.post('/signup', (req, res, next) => {
+router.post('/signup', [
+        body('name').isString().isLength({ min: 4, max: 60 }),
+        body('user').isString().isLength({ min: 4, max: 20 }),
+        body('email').isEmail(),
+        body('password').isString().isLength({ min: 6, max: 20 }),
+    ], (req, res, next) => {
+    
+    const errors = validationResult(req);
 
-    const pass = req.body.password
-
-    if ( pass && pass === "" || pass.length < 6 || pass > 20 ) {
-        return res.status(500).json({
-            message: `It is not possible to register '${pass}' because cannot be empty and must be between 6 and 20 characters`
-        })
+    if ( !errors.isEmpty() ) {
+        return res.status(422).json({
+            message: `It is not possible to register pass:'${req.body.password}' because cannot be empty and must be between 6 and 20 characters`,
+            errors: errors.array()
+        });
     }
 
-    bcrypt.hash( pass, 10, (err, hash) => {
+    bcrypt.hash( req.body.password, 10, (err, hash) => {
         if (err) {
             return res.status(500).json({
                 error: err,
@@ -113,7 +119,7 @@ router.post('/signup', (req, res, next) => {
         }})
 })
 
-router.get('/:userName', (req, res, next) => {
+router.get('/:userName', checkAuth, (req, res, next) => {
     const usr = req.params.userName
 
     User.findOne({user: usr})
@@ -141,11 +147,13 @@ router.get('/:userName', (req, res, next) => {
 })
 
 // partial changes on user.schema
-router.patch('/:userId', checkAuth, [
+router.patch('/:userId', checkAuth,
+    [
         body('name').optional().isString().isLength({ min: 4, max: 60 }),
         body('user').optional().isString().isLength({ min: 4, max: 20 }),
         body('email').optional().isEmail(),
     ], (req, res, next) => {
+
     const id = req.params.userId
 
     const errors = validationResult(req);
@@ -179,10 +187,10 @@ router.patch('/:userId', checkAuth, [
                         error: err
                     }))
 })
-
-router.delete('/:userId', (req, res, next) => {
+// Adicionar uma validação tipo ADMIN aqui
+router.delete('/:userId', checkAuth, (req, res, next) => {
     const id = req.params.userId
-    
+
     User.findByIdAndDelete({_id: id})
         .exec()
         .then( result => {
@@ -199,7 +207,8 @@ router.delete('/:userId', (req, res, next) => {
         })
 })
 
-router.patch('/:userId/changeProfileImage', upload.single('profileImage'), (req, res, next) => {
+router.patch('/:userId/changeProfileImage',checkAuth,
+    upload.single('profileImage'), (req, res, next) => {
     const id = req.params.userId
 
     User.findByIdAndUpdate( id,
@@ -224,14 +233,19 @@ router.patch('/:userId/changeProfileImage', upload.single('profileImage'), (req,
         })
 })
 
-router.patch('/:userId/changeUserPass/', (req, res, next) => {
+router.patch('/:userId/changeUserPass/', checkAuth, [
+        body('password').isString().isLength({ min: 6, max: 20 })
+    ], (req, res, next) => {
+
     const id = req.params.userId
     const pass = req.body.password
 
-    if ( pass && pass === "" || pass.length < 6 || pass > 20 ) {
-        return res.status(500).json({
-            message: `It is not possible to register '${pass}' because cannot be empty and must be between 6 and 20 characters`
-        })
+    const errors = validationResult(req);
+
+    if ( !errors.isEmpty() ) {
+        return res.status(422).json({
+            errors: errors.array()
+        });
     }
     bcrypt.hash( pass , 10, (err, obj) => {
         if (err) {
@@ -239,30 +253,28 @@ router.patch('/:userId/changeUserPass/', (req, res, next) => {
                 error: err
             })
         }
-        if ( obj ) {
-            console.log(obj )
-            User.findByIdAndUpdate( id ,
-                { $set: { password: obj} },
-                { new: true }
-            )
-            .then( result =>{
-                console.log(result)
-                res.status(200).json({
-                    message: `Password changed successfully!`
-                })
+
+        User.findByIdAndUpdate( id ,
+            { $set: { password: obj } },
+            { new: true }
+        )
+        .then( result =>{
+            console.log(result)
+            res.status(200).json({
+                message: `Password changed successfully!`
             })
-            .catch( err => {
-                console.log(err)
-                res.status(500).json({
-                    error: err
-                })
+        })
+        .catch( err => {
+            console.log(err)
+            res.status(500).json({
+                error: err
             })
-        }
+        })
     })
 
 })
 
-router.patch('/inactivate/:userId/', (req, res, next) => {
+router.patch('/inactivate/:userId/', checkAuth, (req, res, next) => {
     const id = req.params.userId
 
     User.findByIdAndUpdate(id,
