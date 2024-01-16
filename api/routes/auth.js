@@ -5,27 +5,41 @@ const mongoose = require('mongoose')
 const User = require('../models/users')
 const bcrypt = require('bcryptjs')
 
-router.get('/auth/', (req, res, next) => {
-    // const id = req.params.passId
+const jwt = require('jsonwebtoken')
 
-    User.find({user: req.body.user})
-        .then( result => {
-            if ( !result ){
-                console.log(`\t\n${result.user}\n`)
+router.get('/signin/', (req, res, next) => {
+    const usr = req.body.user
+
+    User.findOne({ user: usr, living: true })
+        .then( user => {
+            if ( !user ) {
                 return res.status(404).json({
                     message: `Usuário ${req.body.user} não encontrado`
                 })
             } else {
-                valid = validateUser( req.body.pass, result.password )
-                // console.log(result)
+                bcrypt.compare(req.body.pass, user.password)
                 .then( valid => {
-                    console.log(valid)
-                    if ( valid ) {
-                        console.log(`Eq: ${req.body.pass} = ${valid}`)
-                        res.status(200).json(valid)
+                    if ( !valid ) {
+                        res.status(201).json({
+                            message: `Invalid password, try again!`
+                        })
+                    } else {
+                        const token = jwt.sign(
+                            { userId: user._id, user: user.user, email: user.email, userType: user.userType },
+                            process.env.JWT_KEY,
+                            { expiresIn: '1h' }
+                        )
+                        // console.log(`\t\nLogged! jwt token: ${token}\n`)
+                        res.status(200).json({
+                            message: `Logged!`,
+                            token: token
+                        })
                     }
-                    res.status(201).json({
-                        message: `username ou senha informados incorretamente...`
+                })
+                .catch( err => {
+                    console.log(err)
+                    res.status(500).json({
+                        error: `\nerror: ${err}\n`
                     })
                 })
             }
@@ -42,9 +56,12 @@ async function validateUser(pass, hash) {
     bcrypt
         .compare(pass, hash)
         .then( res => {
-            console.log(res) // return true
+            if ( res ) {
+                return true;
+            }
+            return false;
         })
-        .catch(err => console.error(err.message))
+        .catch( err => console.error(err.message) )
 }
 
 module.exports = router;

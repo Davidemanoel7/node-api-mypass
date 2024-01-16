@@ -7,38 +7,31 @@ const mongoose = require('mongoose')
 const Pass = require('../models/pass')
 const User = require('../models/users')
 
-const bcrypt = require('bcryptjs')
-
 const crypt = require('../../services/crypt.js')
+const { body, validationResult } = require('express-validator')
+
+const { checkCommonAuth } = require('../middleware/check-auth.js')
 
 //não usar /pass, pois em app.js já é referenciado.
 // caso use, o end-point seria: /pass/pass/
-router.get('/', (req, res, next) => {
-    Pass.find()
-        .then( docs => {
-            const response = {
-                count: docs.length,
-                pass: docs
-            }
-            res.status(200).json(response)
-        })
-        .catch( err => {
-            console.log(err)
-            res.status(500).json({
-                error: err || 'Internal server error'
-            })
-        })
-})
 
-router.post('/:userId', (req, res, next) => {
+router.post('/:userId', checkCommonAuth, [
+        body('password').isString().isLength({ min:4, max:20 })
+    ], (req, res, next) => {
+
     const id = req.params.userId
     const pass = req.body.password
 
-    if ( pass && pass === "" || pass.length < 6 || pass > 20 ) {
-        return res.status(500).json({
-            message: `It is not possible to register '${pass}' because cannot be empty and must be between 6 and 20 characters`
+    const validRes = validationResult(req);
+
+    if ( !validRes.isEmpty() ) {
+        return res.status(422).json({
+            message: `Oops... error in ${validRes.errors[0].path} field with value:${validRes.errors[0].value}. Try again!`,
+            errors: validRes.array()
         })
     }
+
+
     User.findOne({_id: id, living: true})
         .then( user => {
             if (!user){
@@ -47,6 +40,7 @@ router.post('/:userId', (req, res, next) => {
                 })
             } else {
                 const crypted = crypt.encryptString(pass);
+
                 const newPass = new Pass({
                     _id: new mongoose.Types.ObjectId(),
                     url: req.body.url,
@@ -55,6 +49,7 @@ router.post('/:userId', (req, res, next) => {
                     userId: user._id,
                     cryptKey: crypted.iv
                 })
+
                 newPass.save()
                     .then( result => {
                         console.log(result)
@@ -83,7 +78,7 @@ router.post('/:userId', (req, res, next) => {
 })
 
 // GET all passwords with userId
-router.get('/alluserpass/:userId', (req, res, next) => {
+router.get('/alluserpass/:userId', checkCommonAuth, (req, res, next) => {
     const id = req.params.userId
     
     User.findOne({_id: id, living: true })
@@ -137,7 +132,7 @@ router.get('/alluserpass/:userId', (req, res, next) => {
         })
 })
 
-router.get('/:passId/', (req, res, next) => {
+router.get('/:passId/', checkCommonAuth, (req, res, next) => {
     const id = req.params.passId
 
     Pass.findOne({_id: id})
@@ -145,7 +140,7 @@ router.get('/:passId/', (req, res, next) => {
         .exec()
         .then( pass => {
             const encrypted = {
-                encryptedText: pass.password ,
+                encryptedText: pass.password,
                 iv: pass.cryptKey
             }
             const crypted = crypt.decryptString(encrypted);
@@ -166,7 +161,7 @@ router.get('/:passId/', (req, res, next) => {
         })
 })
 
-router.delete('/:passId', (req, res, next) => {
+router.delete('/:passId', checkCommonAuth, (req, res, next) => {
     const id = req.params.passId
 
     Pass.findByIdAndDelete({_id: id})
@@ -185,15 +180,22 @@ router.delete('/:passId', (req, res, next) => {
         })
 })
 
-router.patch('/changePass/:passId/', (req, res, next) => {
+router.patch('/changePass/:passId/', checkCommonAuth, [
+    body('password').isString().isLength({ min:4, max:20 })
+    ], (req, res, next) => {
+
     const id = req.params.passId
     const pass = req.body.password
 
-    if ( pass && pass === "" || pass.length < 6 || pass > 20 ) {
-        return res.status(500).json({
-            message: `Cannot change to '${pass}' because it cannot be empty or less than 6 characters`
-        })
+    const validRes = validationResult(req);
+
+    if ( !validRes.isEmpty() ) {
+        return res.status(422).json({
+            message: `Oops... error in ${validRes.errors[0].path} field with value:${validRes.errors[0].value}. Try again!`,
+            errors: validRes.array()
+        });
     }
+
     const newPass = crypt.encryptString(pass);
 
     Pass.findByIdAndUpdate( id ,

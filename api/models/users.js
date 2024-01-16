@@ -28,6 +28,11 @@ const userSchema = new mongoose.Schema({
     living: {
         type: Boolean,
         default: true
+    },
+    userType: {
+        type: String,
+        required: false,
+        default: 'common'
     }
 });
 
