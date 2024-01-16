@@ -7,10 +7,10 @@ const mongoose = require('mongoose')
 const Pass = require('../models/pass')
 const User = require('../models/users')
 
-const bcrypt = require('bcryptjs')
-
 const crypt = require('../../services/crypt.js')
 const { body, validationResult } = require('express-validator')
+
+const checkAuth = require('../middleware/check-auth.js')
 
 //não usar /pass, pois em app.js já é referenciado.
 // caso use, o end-point seria: /pass/pass/
@@ -31,7 +31,7 @@ router.get('/', (req, res, next) => {
         })
 })
 
-router.post('/:userId', [
+router.post('/:userId', checkAuth, [
         body('password').isString().isLength({ min:4, max:20 })
     ], (req, res, next) => {
 
@@ -94,7 +94,7 @@ router.post('/:userId', [
 })
 
 // GET all passwords with userId
-router.get('/alluserpass/:userId', (req, res, next) => {
+router.get('/alluserpass/:userId', checkAuth, (req, res, next) => {
     const id = req.params.userId
     
     User.findOne({_id: id, living: true })
@@ -148,7 +148,7 @@ router.get('/alluserpass/:userId', (req, res, next) => {
         })
 })
 
-router.get('/:passId/', (req, res, next) => {
+router.get('/:passId/', checkAuth, (req, res, next) => {
     const id = req.params.passId
 
     Pass.findOne({_id: id})
@@ -177,7 +177,7 @@ router.get('/:passId/', (req, res, next) => {
         })
 })
 
-router.delete('/:passId', (req, res, next) => {
+router.delete('/:passId', checkAuth, (req, res, next) => {
     const id = req.params.passId
 
     Pass.findByIdAndDelete({_id: id})
@@ -196,7 +196,7 @@ router.delete('/:passId', (req, res, next) => {
         })
 })
 
-router.patch('/changePass/:passId/', [
+router.patch('/changePass/:passId/', checkAuth, [
     body('password').isString().isLength({ min:4, max:20 })
     ], (req, res, next) => {
 
