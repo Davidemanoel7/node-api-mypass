@@ -70,12 +70,12 @@ router.post('/signup', [
         body('password').isString().isLength({ min: 6, max: 20 }),
     ], (req, res, next) => {
     
-    const errors = validationResult(req);
+    const validRes = validationResult(req);
 
-    if ( !errors.isEmpty() ) {
+    if ( !validRes.isEmpty() ) {
         return res.status(422).json({
-            message: `It is not possible to register pass:'${req.body.password}' because cannot be empty and must be between 6 and 20 characters`,
-            errors: errors.array()
+            message: `Oops... error in ${validRes.errors[0].path} field with value:${validRes.errors[0].value}. Try again!`,
+            errors: validRes.array()
         });
     }
 
