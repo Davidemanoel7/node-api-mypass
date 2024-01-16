@@ -42,7 +42,7 @@ const upload = multer({
 
 //não usar /users, pois em app.js já é referenciado.
 // caso use, o end-point seria: /users/users/
-router.get('/', checkAllowAuth, (req, res, next) => {
+router.get('/', checkAdminAuth, (req, res, next) => {
     User.find({ living: true })
         .select('_id name user email')
         .exec()
@@ -122,11 +122,11 @@ router.post('/signup',
         }})
 })
 
-router.get('/:userName', checkAllowAuth, (req, res, next) => {
-    const usr = req.params.userName
+router.get('/:userId', checkAllowAuth, (req, res, next) => {
+    const usr = req.params.userId
 
     User.findOne({user: usr})
-        .select('_id name user email password profileImage living')
+        .select('_id name user email profileImage living')
         .exec()
         .then( doc => {
             if ( doc && doc.living ) {
