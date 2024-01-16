@@ -16,7 +16,9 @@ const { checkCommonAuth } = require('../middleware/check-auth.js')
 // caso use, o end-point seria: /pass/pass/
 
 router.post('/:userId', checkCommonAuth, [
-        body('password').isString().isLength({ min:4, max:20 })
+        body('description').optional().isString().isLength({ max: 200 }),
+        body('url').optional().isString().isLength({ max: 200 }),
+        body('password').isString().isLength({ min:4, max:20 }),
     ], (req, res, next) => {
 
     const id = req.params.userId
@@ -181,7 +183,9 @@ router.delete('/:passId', checkCommonAuth, (req, res, next) => {
 })
 
 router.patch('/changePass/:passId/', checkCommonAuth, [
-    body('password').isString().isLength({ min:4, max:20 })
+        body('password').optional().isString().isLength({ min:4, max:20 }),
+        body('description').optional().isString().isLength({ max: 200 }),
+        body('url').optional().isString().isLength({ max: 200 })
     ], (req, res, next) => {
 
     const id = req.params.passId
@@ -191,7 +195,7 @@ router.patch('/changePass/:passId/', checkCommonAuth, [
 
     if ( !validRes.isEmpty() ) {
         return res.status(422).json({
-            message: `Oops... error in ${validRes.errors[0].path} field with value:${validRes.errors[0].value}. Try again!`,
+            message: `Oops... error in field with value:${validRes.errors}. Try again!`,
             errors: validRes.array()
         });
     }
@@ -199,7 +203,12 @@ router.patch('/changePass/:passId/', checkCommonAuth, [
     const newPass = crypt.encryptString(pass);
 
     Pass.findByIdAndUpdate( id ,
-        { $set: { password: newPass.encryptedText, cryptKey: newPass.iv }},
+        { $set: {
+            url: req.body.url,
+            description: req.body.description,
+            password: newPass.encryptedText,
+            cryptKey: newPass.iv
+        }},
         { new: true })
         .then( result => {
             console.log(`\n${result}\n`)
