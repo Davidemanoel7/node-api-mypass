@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
-const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema({
+    _id: mongoose.Schema.Types.ObjectId,
     name: {
         required: true,
         type: String,
@@ -33,18 +33,6 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: false,
         default: 'common'
-    }
-});
-
-// Hash de senha antes de salvar no DB...
-userSchema.pre('save', async function(next) {
-    try {
-        const salt = await bcrypt.genSalt(10);
-        const hashedPass = await bcrypt.hash( this.password, salt);
-        this.password = hashedPass;
-        next();
-    } catch(error) {
-        next(error);
     }
 });
 
