@@ -19,11 +19,11 @@ const port = process.env.PORT || 3000;
 app.use(express.json());
 
 // Rotas que devem lidar com as requisições
-const userRoutes = require('./routes/users');
+const userRoutes = require('./routes/userRoutes');
 const passRoutes = require('./routes/pass');
 const authRoutes = require('./routes/auth');
 
-app.use('/v1/users', userRoutes);
+app.use('/v1/user', userRoutes);
 app.use('/v1/pass', passRoutes);
 app.use('/v1/auth', authRoutes);
 
