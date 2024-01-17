@@ -123,9 +123,9 @@ router.post('/signup',
 })
 
 router.get('/:userId', checkAllowAuth, (req, res, next) => {
-    const usr = req.params.userId
+    const id = req.params.userId
 
-    User.findOne({user: usr})
+    User.findOne({_id: id})
         .select('_id name user email profileImage living')
         .exec()
         .then( doc => {
