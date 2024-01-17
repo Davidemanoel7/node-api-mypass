@@ -20,12 +20,12 @@ app.use(express.json());
 
 // Rotas que devem lidar com as requisições
 const userRoutes = require('./routes/userRoutes');
-const passRoutes = require('./routes/pass');
-const authRoutes = require('./routes/auth');
+const passRoutes = require('./routes/passRoutes');
+// const authRoutes = require('./routes/auth');
 
-app.use('/v1/user', userRoutes);
-app.use('/v1/pass', passRoutes);
-app.use('/v1/auth', authRoutes);
+app.use('/v1/user/', userRoutes);
+app.use('/v1/pass/', passRoutes);
+// app.use('/v1/auth/', authRoutes);
 
 app.listen(port, () => {
     console.log(`Server started at ${port}`);
