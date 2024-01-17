@@ -28,9 +28,9 @@ const app = express()
 app.use(express.json())
 
 // Routes which should handle requests
-app.use('/users', userRoutes)
-app.use('/pass', passRoutes)
-app.use('/auth', authRoutes)
+app.use('/v1/users', userRoutes)
+app.use('/v1/pass', passRoutes)
+app.use('/v1/auth', authRoutes)
 // app.use('/static', express.statis('public')) //entregar arquivos estáticos como imagens, arquivos CSS, e arquivos JavaScript que estejam no diretório public. Serão entregues na rota: localhost:3000/static/<path_to_file>
 
 app.use(bodyParser.urlencoded({extended: false}))
