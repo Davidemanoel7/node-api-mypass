@@ -134,7 +134,7 @@ router.get('/alluserpass/:userId', checkCommonAuth, (req, res, next) => {
         })
 })
 
-router.get('/:passId/', checkCommonAuth, (req, res, next) => {
+router.get('/:passId/user/:userId/', checkCommonAuth, (req, res, next) => {
     const id = req.params.passId
 
     Pass.findOne({_id: id})
@@ -163,7 +163,7 @@ router.get('/:passId/', checkCommonAuth, (req, res, next) => {
         })
 })
 
-router.delete('/:passId', checkCommonAuth, (req, res, next) => {
+router.delete('/:passId/user/:userId/', checkCommonAuth, (req, res, next) => {
     const id = req.params.passId
 
     Pass.findByIdAndDelete({_id: id})
@@ -182,7 +182,7 @@ router.delete('/:passId', checkCommonAuth, (req, res, next) => {
         })
 })
 
-router.patch('/changePass/:passId/', checkCommonAuth, [
+router.patch('/changePass/:passId/user/:userId/', checkCommonAuth, [
         body('password').optional().isString().isLength({ min:4, max:20 }),
         body('description').optional().isString().isLength({ max: 200 }),
         body('url').optional().isString().isLength({ max: 200 })

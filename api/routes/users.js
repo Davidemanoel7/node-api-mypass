@@ -42,8 +42,8 @@ const upload = multer({
 
 //não usar /users, pois em app.js já é referenciado.
 // caso use, o end-point seria: /users/users/
-router.get('/', checkAllowAuth, (req, res, next) => {
-    User.find({ living: true })
+router.get('/', checkAdminAuth, (req, res, next) => {
+    User.find()
         .select('_id name user email')
         .exec()
         .then( docs => {
@@ -122,11 +122,11 @@ router.post('/signup',
         }})
 })
 
-router.get('/:userName', checkAllowAuth, (req, res, next) => {
-    const usr = req.params.userName
+router.get('/:userId', checkAllowAuth, (req, res, next) => {
+    const id = req.params.userId
 
-    User.findOne({user: usr})
-        .select('_id name user email password profileImage living')
+    User.findOne({_id: id})
+        .select('_id name user email profileImage living')
         .exec()
         .then( doc => {
             if ( doc && doc.living ) {
@@ -236,14 +236,14 @@ router.patch('/changeProfileImage/:userId', checkCommonAuth,
         })
 })
 
-router.patch('/changeUserPass/:userId', checkCommonAuth,
+router.patch('/changeUserPass/:userId', checkAllowAuth,
     [
         body('password').isString().isLength({ min: 6, max: 20 })
     ], (req, res, next) => {
 
     const id = req.params.userId
     const pass = req.body.password
-        
+
     const errors = validationResult(req);
 
     if ( !errors.isEmpty() ) {
@@ -262,8 +262,7 @@ router.patch('/changeUserPass/:userId', checkCommonAuth,
             { $set: { password: obj } },
             { new: true }
         )
-        .then( result =>{
-            console.log(result)
+        .then( result => {
             res.status(200).json({
                 message: `Password changed successfully!`
             })

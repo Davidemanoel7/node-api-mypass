@@ -5,6 +5,8 @@ const mongoose = require('mongoose')
 const User = require('../models/users')
 const bcrypt = require('bcryptjs')
 
+const { body, validationResult } = require('express-validator')
+
 const jwt = require('jsonwebtoken')
 
 router.get('/signin/', (req, res, next) => {
@@ -52,16 +54,37 @@ router.get('/signin/', (req, res, next) => {
         })
 })
 
-async function validateUser(pass, hash) {
-    bcrypt
-        .compare(pass, hash)
-        .then( res => {
-            if ( res ) {
-                return true;
-            }
-            return false;
+router.patch('/forgotPass/', [
+    body('email').isEmail(),
+    body('password').isString().isLength({ min: 6 , max: 20 })
+], ( req, res, next ) => {
+
+    const errors = validationResult(req)
+    const mail = req.body.email
+    const pass = req.body.password
+
+    if ( !errors.isEmpty() ) {
+        return res.status(422).json({
+            error: errors.array()
         })
-        .catch( err => console.error(err.message) )
-}
+    }
+
+    const newPass = bcrypt.hashSync( pass, 10 );
+
+    User.findOneAndUpdate( {email: mail},
+        { $set: { password: newPass }},
+        { new: true })
+        .then( updatedUser => {
+            console.log(updatedUser)
+            res.status(200).json({
+                message: `Password changed successfully!`
+            });
+        })
+        .catch( err => {
+            res.status(500).json({
+                error: err
+            });
+        })
+})
 
 module.exports = router;
