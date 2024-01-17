@@ -236,14 +236,14 @@ router.patch('/changeProfileImage/:userId', checkCommonAuth,
         })
 })
 
-router.patch('/changeUserPass/:userId', checkCommonAuth,
+router.patch('/changeUserPass/:userId', checkAllowAuth,
     [
         body('password').isString().isLength({ min: 6, max: 20 })
     ], (req, res, next) => {
 
     const id = req.params.userId
     const pass = req.body.password
-        
+
     const errors = validationResult(req);
 
     if ( !errors.isEmpty() ) {
@@ -262,8 +262,7 @@ router.patch('/changeUserPass/:userId', checkCommonAuth,
             { $set: { password: obj } },
             { new: true }
         )
-        .then( result =>{
-            console.log(result)
+        .then( result => {
             res.status(200).json({
                 message: `Password changed successfully!`
             })
