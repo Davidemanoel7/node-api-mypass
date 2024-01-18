@@ -2,17 +2,9 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const User = require('../models/users');
 
-const { validationResult } = require('express-validator');
+const validationMidd = require('../middleware/validationMidw');
 
-exports.signup = (req, res, next) => {
-    const validRes = validationResult(req);
-
-    if (!validRes.isEmpty()) {
-        return res.status(422).json({
-            message: `Oops... error in ${validRes.errors[0].param} field with value: ${validRes.errors[0].value}. Try again!`,
-            errors: validRes.array()
-        });
-    }
+exports.signup = [validationMidd.validate, (req, res, next) => {
 
     bcrypt.hash(req.body.password, 10, (err, hash) => {
         if (err) {
@@ -54,7 +46,7 @@ exports.signup = (req, res, next) => {
                 });
         }
     });
-};
+}];
 
 exports.getAllUsers = (req, res, next) => {
     User.find()
@@ -102,16 +94,8 @@ exports.getUserById = (req, res, next) => {
         })
 }
 
-exports.updateUserById = (req, res, next) => {
+exports.updateUserById = [ validationMidd.validate, (req, res, next) => {
     const id = req.params.userId
-
-    const errors = validationResult(req);
-
-    if ( !errors.isEmpty() ) {
-        return res.status(422).json({
-            errors: errors.array()
-        });
-    }
 
     User.findByIdAndUpdate( id,
                     { $set: {
@@ -135,7 +119,7 @@ exports.updateUserById = (req, res, next) => {
                         message: `User not found by ID:${req.params.userId}...`,
                         error: err
                     }))
-}
+}];
 
 exports.deleteUserById = (req, res, next) => {
     const id = req.params.userId
@@ -208,17 +192,9 @@ exports.activateUserById = (req, res, next) => {
         })
 }
 
-exports.changeUserPass = (req, res, next) => {
+exports.changeUserPass = [ validationMidd.validate, (req, res, next) => {
     const id = req.params.userId
     const newPass = req.body.password
-
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-        return res.status(422).json({
-            errors: errors.array()
-        })
-    }
 
     bcrypt.hash(newPass, 10, (err, hashed) => {
         if (err) {
@@ -243,7 +219,7 @@ exports.changeUserPass = (req, res, next) => {
                 })
             })
     })
-}
+}];
 
 exports.changeUserProfileImage = (req, res, next) => {
     const id = req.params.userId;
