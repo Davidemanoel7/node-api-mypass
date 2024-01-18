@@ -5,7 +5,7 @@ const checkAuth = (userType) => {
         try {
             const token = req.headers.authorization.split(' ')[1];
             
-            if ( !token ) {
+            if ( !/^Bearer\s/.test(req.headers.authorization) || !token ) {
                 throw new Error('Auth failed. Token missing or invalid format.');
             }
 
