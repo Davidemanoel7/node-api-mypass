@@ -28,7 +28,7 @@ Certifique-se de ter as seguintes ferramentas instaladas em seu sistema:
 ## Variáveis de ambiente :globe_with_meridians:
 Na raiz do projeto, configure as variáveis de ambiente em dois arquivos: `.env` e `nodemon.json`.
 
-- No arquivo `.env` criado, crie as seguintes variáveis, como mostrado abaixo:
+**No arquivo `.env` criado, crie as seguintes variáveis, como mostrado no exemplo abaixo:**
 ```
 DATA_BASE = 'your_mongo_data_base_connection_link'
 PORT = OUR_PORT_HERE or 3000
@@ -41,7 +41,7 @@ Onde:
 - `ALGORITHM`: Algoritmos utilizados na criptogragia e decriptografia das senhas. [Documentação](https://cryptojs.gitbook.io/docs/)
 
 
-- No arquivo `nodemon.json` criado, crie as seguintes variáveis, como mostrado abaixo:
+**No arquivo `nodemon.json` criado, crie as seguintes variáveis, como mostrado no exemplo abaixo:**
 
 ```json
 {
