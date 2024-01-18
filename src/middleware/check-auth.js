@@ -24,8 +24,12 @@ const checkAuth = (userType) => {
 
         } catch ( err ) {
             console.log(err)
+            if ( err.name === 'TokenExpiredError') {
+                return res.status(401).json({
+                    error: `Auth failed. ${err.message}: `
+                })
+            }
             res.status(401).json({
-                message: `Auth failed. Invalid token or insufficient permissions.`,
                 error: err.message
             })
         }
