@@ -26,7 +26,7 @@ const checkAuth = (userType) => {
             console.log(err)
             res.status(401).json({
                 message: `Auth failed. Invalid token or insufficient permissions.`,
-                error: err
+                error: err.message
             })
         }
     }
