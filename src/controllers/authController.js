@@ -76,38 +76,35 @@ exports.forgotPass = [ validationMidd.validate, (req, res, next) => {
                     message: `User with email: ${mail} not found.`
                 })
             }
-            console.log(usr)
 
             const transport = nodemailer.createTransport({
-                host: nodemailConfig.smtp_host,
-                port: nodemailConfig.port,
+                service: 'gmail',
                 auth: {
-                    user: nodemailConfig.user,
+                    user: nodemailConfig.email,
                     pass: nodemailConfig.pass
                 }
             });
-
             const mailSended = {
-                from: nodemailConfig.myEmail,
+                from: nodemailConfig.email,
                 to: mail,
                 subject: '[MyPass] Forgot Password 🔑',
                 text: `You are accepting this email because you requested password recovery.\n\n` +
                         `Click the following link or paste it into your browser to complete the process:\n\n` +
-                        `http://localhost:3000/v1/auth/resetPass/${token}\n\n` +
-                        `If you have not requested password recovery, please ignore this email.\n\n\n` +
-                        `please, no reply this email.`
+                        `http://localhost:3000/v1/auth/resetPass/${token}\n\n\n` +
+                        `📌If you have not requested password recovery, please ignore this email.\n\n` +
+                        `📌 please, no reply this email.`
             }
 
             transport.sendMail( mailSended, (err, info) => {
                 if ( err ) {
                     console.log(err)
                     return res.status(500).json({
-                        message: 'Erro ao enviar email'
+                        message: 'Error to send email'
                     })
                 }
                 res.status(200).json({
                     info: info,
-                    message: 'E-mail de recuperação enviado!'
+                    message: '\nRecovery email sent, check your inbox!\n[Recovery link has expires in 1 hour]\n'
                 })
             })
         })
@@ -125,15 +122,15 @@ exports.resetPass = [ validationMidd.validate, (req, res, next) => {
     const newPass = bcrypt.hashSync( req.body.password, 10 );
 
     User.findOneAndUpdate({
-            resetPassToken: token, //Vefiricando se o token de reset é o mesmo
-            resetPassExpires: { $gt: Date.now() } // $gt (greater than) verifica se resetPassExpires é maior que o momento atual
-        },
-        { $set: {
-            password: newPass,
-            resetPassToken: null,
-            resetPassExpires: null
-        }},
-        { new: true }
+                resetPassToken: token, //Vefiricando se o token de reset é o mesmo
+                resetPassExpires: { $gt: Date.now() } // $gt (greater than) verifica se resetPassExpires é maior que o momento atual
+            },
+            { $set: {
+                password: newPass,
+                resetPassToken: null,
+                resetPassExpires: null
+            }},
+            { new: true }
         )
         .then( usr =>{
             console.log(`\nUser: ${usr}\n`)
