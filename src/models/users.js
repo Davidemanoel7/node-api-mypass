@@ -33,6 +33,16 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: false,
         default: 'common'
+    },
+    resetPassToken: {
+        type: String,
+        required: false,
+        default: null
+    },
+    resetPassExpires: {
+        type: Number,
+        required: false,
+        default: null
     }
 });
 
