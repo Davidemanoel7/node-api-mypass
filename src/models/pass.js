@@ -1,9 +1,8 @@
+require('dotenv').config();
+
 const mongoose = require('mongoose');
-const User = require('../models/users');
-const { ObjectId } = require('mongodb');
 
 const passSchema = mongoose.Schema({
-    _id: mongoose.Schema.Types.ObjectId,
     url: {
         required: false,
         type: String
@@ -21,10 +20,10 @@ const passSchema = mongoose.Schema({
         type: String
     },
     userId: {
-        type: ObjectId,
-        ref: User,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
         required: true
     }
 })
 
-module.exports = mongoose.model('Pass', passSchema)
+module.exports = mongoose.model('Pass', passSchema);
