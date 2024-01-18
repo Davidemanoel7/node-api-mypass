@@ -1,7 +1,6 @@
 module.exports = {
-    user: process.env.SMTP_USER,
+    email: process.env.MYPASSEMAIL,
     pass: process.env.SMTP_PASS,
-    smtp_host: process.env.SMTP_HOST,
+    smtp: 'smtp.gmail.com',
     port: process.env.SMTP_PORT,
-    myEmail: process.env.MYPASSEMAIL
 }
