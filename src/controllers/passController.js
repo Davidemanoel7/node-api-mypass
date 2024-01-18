@@ -3,21 +3,11 @@ const User = require('../models/users');
 const Pass = require('../models/pass');
 const crypt = require('../middleware/crypt');
 
-const { validationResult } = require('express-validator');
+const validatorMidd = require('../middleware/validationMidw');
 
-exports.createPassword = (req, res, next) => {
+exports.createPassword = [ validatorMidd.validate ,(req, res, next) => {
     const id = req.params.userId;
     const pass = req.body.password;
-
-    // Validação dos campos usando express-validator
-    const validRes = validationResult(req);
-
-    if (!validRes.isEmpty()) {
-        return res.status(422).json({
-            message: `Oops... error in ${validRes.errors[0].path} field with value:${validRes.errors[0].value}. Try again!`,
-            errors: validRes.array()
-        });
-    }
 
     User.findOne({ _id: id, living: true })
         .then(user => {
@@ -62,7 +52,7 @@ exports.createPassword = (req, res, next) => {
                 error: err
             });
         });
-};
+}];
 
 exports.getAllUserPass = (req, res, next) => {
     const id = req.params.userId
@@ -166,18 +156,9 @@ exports.deletePassByIdAndUserId = (req, res, next) => {
         })
 }
 
-exports.changePassByIdAndUserId = (req, res, next) => {
+exports.changePassByIdAndUserId = [ validatorMidd.validate, (req, res, next) => {
     const id = req.params.passId
     const pass = req.body.password
-
-    const validRes = validationResult(req);
-
-    if ( !validRes.isEmpty() ) {
-        return res.status(422).json({
-            message: `Oops... error in field with value:${validRes.errors}. Try again!`,
-            errors: validRes.array()
-        });
-    }
 
     const newPass = crypt.encryptString(pass);
 
@@ -201,4 +182,4 @@ exports.changePassByIdAndUserId = (req, res, next) => {
                 message: `User by ID:${req.params.userId} not found OR Cannot change pass :(`
             })
         })
-}
+}];
