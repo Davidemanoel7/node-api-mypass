@@ -4,7 +4,7 @@ const authController = require('../controllers/authController');
 
 const router = express.Router();
 
-router.get('/signin', authController.sigIn );
+router.post('/signin', authController.sigIn );
 
 router.patch('/forgotPass/', [
     body('email').isEmail()
