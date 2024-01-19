@@ -106,6 +106,11 @@ exports.updateUserById = [ validationMidd.validate, (req, res, next) => {
                     { new: true })
                     .then( result => {
                         console.log(result);
+                        if (!result) {
+                            return res.status(404).json({
+                                message: `User not found with ID ${id}`
+                            })
+                        }
                         res.status(200).json({
                             message: `Updated user ${result.user} successfully`,
                             updatedUser : result,
@@ -116,8 +121,7 @@ exports.updateUserById = [ validationMidd.validate, (req, res, next) => {
                         })
                     })
                     .catch( err => res.status(500).json({
-                        message: `User not found by ID:${req.params.userId}...`,
-                        error: err
+                        error: `${err} Internal server error`
                     }))
 }];
 
@@ -127,15 +131,19 @@ exports.deleteUserById = (req, res, next) => {
     User.findByIdAndDelete({_id: id})
         .exec()
         .then( result => {
+            if ( !result ) {
+                return res.status(404).json({
+                    message: `User by ID ${id} not found.`
+                })
+            }
             res.status(200).json({
                 message: `User ${result.user} deleted successfully`,
-                deletedUser: result
             })
         })
         .catch( err => {
             console.log(err)
             res.status(500).json({
-                error: err
+                error: `${err} or Internal server error`
             })
         })
 }
