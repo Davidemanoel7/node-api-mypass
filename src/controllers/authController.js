@@ -22,7 +22,7 @@ exports.sigIn = (req, res, next) => {
                 bcrypt.compare( pass, user.password)
                     .then( valid => {
                         if ( !valid ) {
-                            res.status(201).json({
+                            res.status(401).json({
                                 message: `Invalid password, try again!`
                             });
                         } else {
