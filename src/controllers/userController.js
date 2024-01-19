@@ -157,7 +157,7 @@ exports.inactivateUserById = (req, res, next) => {
         .then( usr => {
             if (!usr) {
                 return res.status(404).json({
-                    message: 'User not found'
+                    message: `User by ID ${id} not found.`
                 })
             }
 
