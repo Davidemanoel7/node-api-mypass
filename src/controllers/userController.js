@@ -216,6 +216,11 @@ exports.changeUserPass = [ validationMidd.validate, (req, res, next) => {
             { new: true }
             )
             .then( result => {
+                if ( !result ) {
+                    return res.status(404).json({
+                        message: `User not found with ID ${id}`
+                    })
+                }
                 res.status(200).json({
                     message: 'Password changed successfully!'
                 })
@@ -223,7 +228,7 @@ exports.changeUserPass = [ validationMidd.validate, (req, res, next) => {
             .catch( err => {
                 console.log(err)
                 res.status(500).json({
-                    error: err
+                    error: `${err} Internal server error`
                 })
             })
     })
@@ -236,20 +241,20 @@ exports.changeUserProfileImage = (req, res, next) => {
         { $set: { profileImage: req.file.path }},
         { new: true })
         .then(result => {
-            console.log(result);
+            if (!result) {
+                return res.status(404).json({
+                    message: `User not found with ID ${id}`
+                })
+            }
             res.status(200).json({
-                message: `Profile image changed from user ${result.user}!`,
-                request: {
-                    type: 'GET/',
-                    url: `/users/${result.user}`
-                }
+                message: `Profile image changed from user ${result.user}!`
             });
         })
         .catch(err => {
             console.log(err);
             res.status(500).json({
                 error: err,
-                message: `User by ID:${req.params.userId} not found OR Cannot change profile image :(`
+                message: `Cannot change profile image :(`
             });
         });
 };
