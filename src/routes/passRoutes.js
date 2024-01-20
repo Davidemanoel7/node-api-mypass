@@ -17,7 +17,7 @@ router.get('/alluserpass/:userId', checkCommonAuth, passController.getAllUserPas
 
 router.get('/:passId/user/:userId/', checkCommonAuth, passController.getPassByIdAndUserId);
 
-router.delete('/:passId/user/:userId/', checkCommonAuth, passController.deletePassByIdAndUserId);
+router.delete('/del/:passId/user/:userId/', checkCommonAuth, passController.deletePassByIdAndUserId);
 
 router.patch('/changePass/:passId/user/:userId/', checkCommonAuth, [
     body('password').optional().isString().isLength({ min:4, max:20 }),

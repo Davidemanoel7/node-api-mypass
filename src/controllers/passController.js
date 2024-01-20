@@ -80,15 +80,9 @@ exports.getAllUserPass = (req, res, next) => {
                                 }
                             }
                         })
-                        if ( docs ) {
-                            res.status(200).json({
-                                response
-                            })
-                        } else {
-                            res.status(404).json({
-                                message: `Not found pass or invalid entry for user ${user.user}`
-                            })
-                        }
+                        res.status(200).json({
+                            response
+                        })
                     })
                     .catch( err => {
                         console.log(err)
@@ -120,6 +114,11 @@ exports.getPassByIdAndUserId = (req, res, next) => {
                 iv: pass.cryptKey
             }
             const crypted = crypt.decryptString(encrypted);
+            if ( !pass ){
+                return res.status(404).json({
+                    message: `Password not found for provided ID: ${id}`
+                })
+            }
             res.status(200).json({
                 pass: {
                     id: pass._id,
@@ -143,9 +142,13 @@ exports.deletePassByIdAndUserId = (req, res, next) => {
     Pass.findByIdAndDelete({_id: id})
         .exec()
         .then( result => {
+            if ( !result ) {
+                return res.status(404).json({
+                    message: `Password not found for provided ID: ${id}`
+                })
+            }
             res.status(200).json({
-                message: `Password deleted successfully for user ${result.user}`,
-                deletedPass: result
+                message: `Password deleted successfully`
             })
         })
         .catch( err => {
@@ -171,6 +174,11 @@ exports.changePassByIdAndUserId = [ validatorMidd.validate, (req, res, next) => 
         }},
         { new: true })
         .then( result => {
+            if ( !result ) {
+                return res.status(404).json({
+                    message: `Password not found for provided ID: ${id}`
+                })
+            }
             console.log(`\n${result}\n`)
             res.status(200).json({
                 message: `Password changed successfully!`,
