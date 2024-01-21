@@ -80,7 +80,7 @@ A autenticação de usuário será necessária para acessar algumas rotas da API
 
 ## Documentação :page_facing_up:
 
-[Neste arquivo](https://github.com/Davidemanoel7/node-api-mypass/blob/main/learn.md) contém a documentação da API contendo as endpoints e outras informações.
+Neste [swagger](https://app.swaggerhub.com/apis-docs/DAVIDEMANOEL706/MyPass/1.0.0) contém a documentação da API contendo as endpoints e os schemas.
 
 ## Contribuição :bulb:
 
