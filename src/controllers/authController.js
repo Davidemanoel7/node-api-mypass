@@ -34,7 +34,7 @@ exports.sigIn = (req, res, next) => {
                                 
                                 },
                                 process.env.JWT_KEY,
-                                { expiresIn: '1h' }
+                                { expiresIn: '24h' }
                             );
                             res.status(200).json({
                                 message: 'Logged!',
@@ -145,6 +145,30 @@ exports.resetPass = [ validationMidd.validate, (req, res, next) => {
         })
         .catch( err => {
             console.log(err);
+            res.status(500).json({
+                error: err
+            })
+        })
+}];
+
+exports.checkSecurity = [ validationMidd.validate, (req, res, next) => {
+    const id = req.params.userId
+    const pass = req.body.password
+
+    User.findById(id)
+        .then( usr => {
+            let check = bcrypt.compareSync( pass, usr.password )
+            if ( !check ) {
+                return res.status(401).json({
+                    message: `Unauthorized. invalid password`
+                })
+            }
+            res.status(200).json({
+                message: `Authorized`
+            });
+        })
+        .catch( err => {
+            console.log(err)
             res.status(500).json({
                 error: err
             })
