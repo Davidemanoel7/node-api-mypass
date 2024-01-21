@@ -15,9 +15,11 @@
 |password| String| HASH| Non Null	 |
 | profileImage| file   | 5MB | -       |
 |living| Bool | -      |  - 		 |
-|created| Date| - 	   | Non Null	 |
+|resetPassToken| String| - 	   | 	 |
+|resetPassExpires| Number | - 	   |  |
 
 ## Pass
+
 | Model | Pass  |
 |--------|-------|
 | Description|Stores users passes |
@@ -33,6 +35,7 @@
 
 
 ## Relationships
+
 ```mermaid
 erDiagram
 
@@ -41,7 +44,9 @@ User ||--|{Pass : has
 ```
 
 # API Routers
+
 ## User
+
 ### GET
 
 **URL**: `/users/`
