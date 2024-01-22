@@ -8,7 +8,7 @@ mongoose.Promise = global.Promise;
 
 const mongoUrl = process.env.DATA_BASE;
 
-mongoose.connect(mongoUrl, { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect(mongoUrl)
     .then( () => console.log('\n📦 Database connected\n') )
     .catch(err => console.error('\nError connecting to database: \n', err ));
 
