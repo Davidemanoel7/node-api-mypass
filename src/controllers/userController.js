@@ -2,6 +2,8 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const User = require('../models/users');
 
+const jwt = require('jsonwebtoken');
+
 const validationMidd = require('../middleware/validationMidw');
 
 exports.signup = [validationMidd.validate, (req, res, next) => {
@@ -21,8 +23,18 @@ exports.signup = [validationMidd.validate, (req, res, next) => {
                 userType: req.body.userType
             });
             user.save()
-                .then(result => {
+                .then( result => {
                     console.log(result);
+                    const token = jwt.sign(
+                        { userId: result._id,
+                            user: result.user,
+                            email: result.email,
+                            userType: result.userType
+                        
+                        },
+                        process.env.JWT_KEY,
+                        { expiresIn: '24h' }
+                    );
                     res.status(201).json({
                         message: `Created user ${result.user} successfully`,
                         createdUser: {
@@ -32,9 +44,10 @@ exports.signup = [validationMidd.validate, (req, res, next) => {
                             email: result.email,
                             request: {
                                 type: "GET",
-                                url: `users/${result.user}/`,
+                                url: `/v1/user/${result._id}/`,
                             }
                         },
+                        token: token
                     });
                 })
                 .catch(err => {
