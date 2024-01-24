@@ -25,7 +25,7 @@ app.use((req, res, next) => {
 
 
 app.use((req, res, next) => {
-    const error = new Error('Not found :( ')
+    const error = new Error(`Not found: ${req.originalUrl}`)
     error.status = 404
     next(error)
 })
@@ -35,7 +35,6 @@ app.use((error, req, res, next) => {
     res.json({
         error: {
             message: error.message,
-
         }
     })
 })
