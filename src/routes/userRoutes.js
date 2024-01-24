@@ -26,8 +26,6 @@ router.patch('/update/:userId', checkAllowAuth, [
 
 router.delete('/del/:userId', checkAdminAuth, userController.deleteUserById);
 
-router.patch('/activate/:userId', checkAdminAuth, userController.activateUserById);
-
 router.patch('/inactivate/:userId', checkCommonAuth, userController.inactivateUserById);
 
 router.patch('/changeUserPass/:userId', checkAllowAuth, [
