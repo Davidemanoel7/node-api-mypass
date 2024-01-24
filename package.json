@@ -8,7 +8,7 @@
     "testTimeout": 90000
   },
   "scripts": {
-    "test": "jest --watchAll --coverage --verbose --silent --runInBand",
+    "test": "export NODE_ENV=test && jest --watchAll --coverage --verbose --silent --runInBand",
     "start": "nodemon ./src/index.js",
     "dev": "nodemon ./src/index.js"
   },
