@@ -30,7 +30,7 @@ router.patch('/activate/:userId', checkAdminAuth, userController.activateUserByI
 
 router.patch('/inactivate/:userId', checkCommonAuth, userController.inactivateUserById);
 
-router.patch('/changeUserPass/:userId', checkCommonAllowAuth, [
+router.patch('/changeUserPass/:userId', checkAllowAuth, [
     body('password').isString().isLength({ min: 6, max: 20 })
 ], userController.changeUserPass);
 
