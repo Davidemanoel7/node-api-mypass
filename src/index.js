@@ -27,6 +27,8 @@ app.use('/v1/user/', userRoutes);
 app.use('/v1/pass/', passRoutes);
 app.use('/v1/auth/', authRoutes);
 
-app.listen(port, () => {
-    console.log(`Server started at ${port}`);
-});
+if (process.env.NODE_ENV !== 'test') {
+    app.listen(port, () => {
+        console.log(`Server started at ${port}`);
+    });
+}
