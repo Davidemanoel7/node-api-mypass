@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const User = require('../models/users');
+const Pass = require('../models/pass');
 
 const jwt = require('jsonwebtoken');
 
@@ -149,9 +150,17 @@ exports.deleteUserById = (req, res, next) => {
                     message: `User by ID ${id} not found.`
                 })
             }
-            res.status(200).json({
-                message: `User ${result.user} deleted successfully`,
-            })
+            Pass.deleteMany({ userId: result._id })
+                .then( usr => {
+                    console.log(usr);
+                    res.status(200).json({
+                        message: `User ${result.user} deleted successfully`,
+                    })
+                })
+                .catch( err => {
+                    console.log(err);
+                    throw err;
+                });
         })
         .catch( err => {
             console.log(err)
