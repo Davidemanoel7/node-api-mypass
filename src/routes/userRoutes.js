@@ -18,7 +18,7 @@ router.get('/getAll/', checkAdminAuth, userController.getAllUsers);
 
 router.get('/get/:userId', checkAllowAuth, userController.getUserById);
 
-router.patch('/update/:userId', checkCommonAuth, [
+router.patch('/update/:userId', checkAllowAuth, [
     body('name').optional().isString().isLength({ min: 4, max: 60 }),
     body('user').optional().isString().isLength({ min: 4, max: 20 }),
     body('email').optional().isEmail(),
@@ -26,14 +26,12 @@ router.patch('/update/:userId', checkCommonAuth, [
 
 router.delete('/del/:userId', checkAdminAuth, userController.deleteUserById);
 
-router.patch('/activate/:userId', checkAdminAuth, userController.activateUserById);
-
 router.patch('/inactivate/:userId', checkCommonAuth, userController.inactivateUserById);
 
-router.patch('/changeUserPass/:userId', checkCommonAuth, [
+router.patch('/changeUserPass/:userId', checkAllowAuth, [
     body('password').isString().isLength({ min: 6, max: 20 })
 ], userController.changeUserPass);
 
-router.patch('/changeProfileImage/:userId', checkCommonAuth, upload.single('profileImage'), userController.changeUserProfileImage);
+router.patch('/changeProfileImage/:userId', checkAllowAuth, upload.single('profileImage'), userController.changeUserProfileImage);
 
 module.exports = router;

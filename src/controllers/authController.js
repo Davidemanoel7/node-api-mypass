@@ -12,13 +12,23 @@ exports.sigIn = (req, res, next) => {
     const usr = req.body.user
     const pass = req.body.password
 
-    User.findOne({ user: usr, living: true })
+    User.findOne({ user: usr })
         .then( user => {
             if ( !user ) {
                 return res.status(404).json({
                     message: `User ${usr} not found`
                 });
             } else {
+                if ( !user.living ) {
+                    user.living = true
+                    user.save()
+                        .then( res => {
+                            console.log(res)
+                        })
+                        .catch( err => {
+                            console.log(err)
+                        })
+                }
                 bcrypt.compare( pass, user.password)
                     .then( valid => {
                         if ( !valid ) {

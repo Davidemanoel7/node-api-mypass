@@ -1,6 +1,9 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const User = require('../models/users');
+const Pass = require('../models/pass');
+
+const jwt = require('jsonwebtoken');
 
 const validationMidd = require('../middleware/validationMidw');
 
@@ -21,8 +24,18 @@ exports.signup = [validationMidd.validate, (req, res, next) => {
                 userType: req.body.userType
             });
             user.save()
-                .then(result => {
+                .then( result => {
                     console.log(result);
+                    const token = jwt.sign(
+                        { userId: result._id,
+                            user: result.user,
+                            email: result.email,
+                            userType: result.userType
+                        
+                        },
+                        process.env.JWT_KEY,
+                        { expiresIn: '24h' }
+                    );
                     res.status(201).json({
                         message: `Created user ${result.user} successfully`,
                         createdUser: {
@@ -32,9 +45,10 @@ exports.signup = [validationMidd.validate, (req, res, next) => {
                             email: result.email,
                             request: {
                                 type: "GET",
-                                url: `users/${result.user}/`,
+                                url: `/v1/user/${result._id}/`,
                             }
                         },
+                        token: token
                     });
                 })
                 .catch(err => {
@@ -136,9 +150,17 @@ exports.deleteUserById = (req, res, next) => {
                     message: `User by ID ${id} not found.`
                 })
             }
-            res.status(200).json({
-                message: `User ${result.user} deleted successfully`,
-            })
+            Pass.deleteMany({ userId: result._id })
+                .then( usr => {
+                    console.log(usr);
+                    res.status(200).json({
+                        message: `User ${result.user} deleted successfully`,
+                    })
+                })
+                .catch( err => {
+                    console.log(err);
+                    throw err;
+                });
         })
         .catch( err => {
             console.log(err)
@@ -160,40 +182,13 @@ exports.inactivateUserById = (req, res, next) => {
                     message: `User by ID ${id} not found.`
                 })
             }
-
-            console.log(usr)
             res.status(200).json({
                 user: usr,
                 message: `User ${usr.name} inactivated successfully!`
             })
         })
         .catch( err => {
-            res.status(500).json({
-                error: err
-            })
-        })
-}
-
-exports.activateUserById = (req, res, next) => {
-    const id = req.params.userId
-
-    User.findByIdAndUpdate(id,
-        { $set: { living: true }},
-        { new: true })
-        .then( usr => {
-            if (!usr) {
-                return res.status(404).json({
-                    message: 'User not found'
-                })
-            }
-
-            console.log(usr)
-            res.status(200).json({
-                user: usr,
-                message: `User ${usr.name} inactivated successfully!`
-            })
-        })
-        .catch( err => {
+            console.log(err)
             res.status(500).json({
                 error: err
             })
