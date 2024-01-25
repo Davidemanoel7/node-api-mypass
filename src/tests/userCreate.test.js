@@ -2,7 +2,7 @@ const db = require('./db');
 const request = require('supertest');
 const app = require('../app');
 
-const agent = request.agent(app);
+// const agent = request.agent(app);
 
 beforeAll( async () => {
     try {
@@ -31,10 +31,10 @@ afterAll( async () => {
 });
 
 describe( 'Create user', () => {
-    test('Should return 200 if valid credentials', async () => {
+    test('Should return 201 (create) if valid credentials and user not exists', async () => {
         try {
-            agent
-                .post(`/v1/user/signup`)
+            request(app)
+                .post(`/signup`)
                 .type("application/json")
                 .send({
                     name:"Mongo Memory Test",
@@ -42,12 +42,13 @@ describe( 'Create user', () => {
                     user: "mongo",
                     password: "pass123"
                 })
-                .then( res => {
-                    expect(res.statusCode).toBe(200);
+                .then( result => {
+                    console.debug(result)
+                    expect(result.statusCode).toBe(201);
                 })
         } catch (error) {
             console.log(error);
             throw error;
         }
     });
-});1
+});
