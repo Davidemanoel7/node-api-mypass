@@ -8,10 +8,6 @@ mongoose.Promise = global.Promise;
 
 const mongoUrl = process.env.DATA_BASE;
 
-mongoose.connect(mongoUrl)
-    .then( () => console.log('\n📦 Database connected\n') )
-    .catch(err => console.error('\nError connecting to database: \n', err ));
-
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -27,8 +23,12 @@ app.use('/v1/user/', userRoutes);
 app.use('/v1/pass/', passRoutes);
 app.use('/v1/auth/', authRoutes);
 
-if (process.env.NODE_ENV !== 'test') {
-    app.listen(port, () => {
-        console.log(`Server started at ${port}`);
-    });
-}
+mongoose.connect(mongoUrl)
+.then( () => console.log('\n📦 Database connected\n') )
+.catch(err => console.error('\nError connecting to database: \n', err ));
+
+app.listen(port, () => {
+    console.log(`Server started at ${port}`);
+});
+
+module.exports = app
