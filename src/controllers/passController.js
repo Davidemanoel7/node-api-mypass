@@ -23,14 +23,12 @@ exports.createPassword = [ validatorMidd.validate ,(req, res, next) => {
     newPass.save()
         .then( result => {
             console.log(result);
-            const e = new Date().setUTCHours();
             res.status(201).json({
                 message: `Password created successfully`,
                 createdpass: {
                     id: result._id,
                     description: result.description,
                     userId: result.userId,
-                    createdAt: e
                 }
             });
         })
