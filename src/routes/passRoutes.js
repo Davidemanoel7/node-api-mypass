@@ -7,23 +7,23 @@ const { body } = require('express-validator');
 
 const router = express.Router();
 
-router.post('/:userId', checkCommonAuth,[
+router.post('/', checkCommonAuth,[
     body('description').optional().isString().isLength({ max: 200 }),
     body('url').optional().isString().isLength({ max: 200 }),
     body('password').isString().isLength({ min: 4, max: 20 }),
 ], passController.createPassword);
 
-router.get('/alluserpass/:userId', checkCommonAuth, passController.getAllUserPass);
+router.get('/alluserpass/', checkCommonAuth, passController.getAllUserPass);
 
-router.get('/:passId/user/:userId/', checkCommonAuth, passController.getPassByIdAndUserId);
+router.get('/:passId/', checkCommonAuth, passController.getPassById);
 
-router.delete('/del/:passId/user/:userId/', checkCommonAuth, passController.deletePassByIdAndUserId);
+router.delete('/del/:passId/', checkCommonAuth, passController.deletePassById);
 
-router.patch('/changePass/:passId/user/:userId/', checkCommonAuth, [
+router.patch('/changePass/:passId/', checkCommonAuth, [
     body('password').optional().isString().isLength({ min:4, max:20 }),
     body('description').optional().isString().isLength({ max: 200 }),
     body('url').optional().isString().isLength({ max: 200 })
-], passController.changePassByIdAndUserId);
+], passController.changePassById);
 
 
 module.exports = router;
