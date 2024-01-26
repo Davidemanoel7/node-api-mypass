@@ -24,7 +24,7 @@ router.patch('/update/', checkAllowAuth, [
     body('email').optional().isEmail(),
 ], userController.updateUser);
 
-router.delete('/del/', checkAdminAuth, userController.deleteUserById);
+router.delete('/del/', checkAllowAuth, userController.deleteUser);
 
 router.patch('/inactivate/', checkCommonAuth, userController.inactivateUser);
 

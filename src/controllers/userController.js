@@ -141,7 +141,7 @@ exports.updateUser = [ validationMidd.validate, (req, res, next) => {
                     }))
 }];
 
-exports.deleteUserById = (req, res, next) => {
+exports.deleteUser = (req, res, next) => {
     const id = req.userData.userId
 
     User.findByIdAndDelete({_id: id})
