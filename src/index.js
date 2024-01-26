@@ -1,7 +1,6 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
 const express = require('express');
-const bodyParser = require('body-parser');
 
 // Configurando a promessa global do Mongoose
 mongoose.Promise = global.Promise;
@@ -30,3 +29,5 @@ app.use('/v1/auth/', authRoutes);
 app.listen(port, () => {
     console.log(`Server started at ${port}`);
 });
+
+module.exports = app

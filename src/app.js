@@ -1,5 +1,5 @@
-const express = require('express');
-const app = express();
+// const express = require('express');
+const app = require('./index.js')
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -39,5 +39,3 @@ app.use((error, req, res, next) => {
         }
     })
 })
-
-module.exports = app
