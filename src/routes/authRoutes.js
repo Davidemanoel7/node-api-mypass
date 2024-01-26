@@ -15,7 +15,7 @@ router.patch('/resetPass/:token', [
     body('password').isString().isLength({ min: 6, max:20 }),
 ], authController.resetPass);
 
-router.post('/checkSecurity/:userId', checkCommonAuth, [
+router.post('/checkSecurity/', checkCommonAuth, [
     body('password').isString().isLength({ min: 6, max:20 }),
 ], authController.checkSecurity);
 
