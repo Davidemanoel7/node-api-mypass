@@ -15,10 +15,6 @@ const checkAuth = (userType) => {
                 throw new Error(`Auth failed. User doesn't have required permissions.`);
             }
 
-            if ( req.params.userId && req.params.userId !== decoded.userId && decoded.userType === 'common'){
-                throw new Error(`Auth failed. Actions on other users are not allowed.`)
-            }
-
             req.userData = decoded;
             next();
 
