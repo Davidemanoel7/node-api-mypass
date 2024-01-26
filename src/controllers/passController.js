@@ -6,48 +6,35 @@ const crypt = require('../middleware/crypt');
 const validatorMidd = require('../middleware/validationMidw');
 
 exports.createPassword = [ validatorMidd.validate ,(req, res, next) => {
-    const id = req.params.userId;
+    const id = req.userData.userId;
     const pass = req.body.password;
 
-    User.findOne({ _id: id, living: true })
-        .then(user => {
-            if (!user) {
-                return res.status(404).json({
-                    message: `User not found with ID ${id}`
-                });
-            } else {
-                const crypted = crypt.encryptString(pass);
+    const crypted = crypt.encryptString(pass);
 
-                const newPass = new Pass({
-                    _id: new mongoose.Types.ObjectId(),
-                    url: req.body.url,
-                    description: req.body.description,
-                    password: crypted.encryptedText,
-                    userId: user._id,
-                    cryptKey: crypted.iv
-                });
+    const newPass = new Pass({
+        _id: new mongoose.Types.ObjectId(),
+        url: req.body.url,
+        description: req.body.description,
+        password: crypted.encryptedText,
+        userId: id,
+        cryptKey: crypted.iv
+    });
 
-                newPass.save()
-                    .then(result => {
-                        console.log(result);
-                        res.status(201).json({
-                            message: `Password created successfully for user ${user.user}`,
-                            createdpass: {
-                                id: result._id,
-                                description: result.description,
-                                userId: result.userId
-                            }
-                        });
-                    })
-                    .catch(err => {
-                        res.status(500).json({
-                            error: err
-                        });
-                    });
-            }
+    newPass.save()
+        .then( result => {
+            console.log(result);
+            const e = new Date().setUTCHours();
+            res.status(201).json({
+                message: `Password created successfully`,
+                createdpass: {
+                    id: result._id,
+                    description: result.description,
+                    userId: result.userId,
+                    createdAt: e
+                }
+            });
         })
         .catch(err => {
-            console.log(err);
             res.status(500).json({
                 error: err
             });
@@ -55,54 +42,38 @@ exports.createPassword = [ validatorMidd.validate ,(req, res, next) => {
 }];
 
 exports.getAllUserPass = (req, res, next) => {
-    const id = req.params.userId
-    
-    User.findOne({_id: id, living: true })
+    const id = req.userData.userId;
+
+    Pass.find({userId: id})
+        .select('_id description url password cryptKey userId')
         .exec()
-        .then( user => {
-            if ( user ) {
-                Pass.find({userId: id})
-                    .select('_id description url password cryptKey userId')
-                    .exec()
-                    .then( docs => {
-                        const response = docs.map( doc => {
-                            const encrypted = {
-                                encryptedText: doc.password,
-                                iv: doc.cryptKey
-                            }
-                            const crypted = crypt.decryptString(encrypted);
-                            return {
-                                pass: {
-                                    id: doc._id,
-                                    url: doc.url,
-                                    description: doc.description,
-                                    password: crypted,
-                                }
-                            }
-                        })
-                        res.status(200).json({
-                            response
-                        })
-                    })
-                    .catch( err => {
-                        console.log(err)
-                        res.status(500).json({error: err || '[Pass] Internal server error'})
-                    });
-            } else {
-                res.status(404).json({
-                    message: `Not found or invalid entry for provided ID ${req.params.userId}`
-                });
-            }
+        .then( docs => {
+            const response = docs.map( doc => {
+                const encrypted = {
+                    encryptedText: doc.password,
+                    iv: doc.cryptKey
+                }
+                const crypted = crypt.decryptString(encrypted);
+                return {
+                    pass: {
+                        id: doc._id,
+                        url: doc.url,
+                        description: doc.description,
+                        password: crypted,
+                    }
+                }
+            })
+            res.status(200).json({
+                response
+            })
         })
         .catch( err => {
             console.log(err)
-            res.status(500).json({
-                error: err || '[User] Internal server error'
-            })
-        })
+            res.status(500).json({error: err || '[Pass] Internal server error'})
+        });
 }
 
-exports.getPassByIdAndUserId = (req, res, next) => {
+exports.getPassById = (req, res, next) => {
     const id = req.params.passId
 
     Pass.findOne({_id: id})
@@ -136,7 +107,7 @@ exports.getPassByIdAndUserId = (req, res, next) => {
         })
 }
 
-exports.deletePassByIdAndUserId = (req, res, next) => {
+exports.deletePassById = (req, res, next) => {
     const id = req.params.passId
 
     Pass.findByIdAndDelete({_id: id})
@@ -159,7 +130,7 @@ exports.deletePassByIdAndUserId = (req, res, next) => {
         })
 }
 
-exports.changePassByIdAndUserId = [ validatorMidd.validate, (req, res, next) => {
+exports.changePassById = [ validatorMidd.validate, (req, res, next) => {
     const id = req.params.passId
     const pass = req.body.password
 
@@ -179,7 +150,6 @@ exports.changePassByIdAndUserId = [ validatorMidd.validate, (req, res, next) => 
                     message: `Password not found for provided ID: ${id}`
                 })
             }
-            console.log(`\n${result}\n`)
             res.status(200).json({
                 message: `Password changed successfully!`,
             })
@@ -187,7 +157,7 @@ exports.changePassByIdAndUserId = [ validatorMidd.validate, (req, res, next) => 
         .catch( err => {
             res.status(500).json({
                 erro: err,
-                message: `User by ID:${req.params.userId} not found OR Cannot change pass :(`
+                message: `Cannot change this pass. Try again.`
             })
         })
 }];
