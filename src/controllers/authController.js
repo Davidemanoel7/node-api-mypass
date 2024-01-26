@@ -101,7 +101,7 @@ exports.forgotPass = [ validationMidd.validate, (req, res, next) => {
                 text: `You are accepting this email because you requested password recovery.\n\n` +
                         `Click the following link or paste it into your browser to complete the process:\n\n` +
                         `http://localhost:3000/v1/auth/resetPass/${token}\n\n\n` +
-                        `📌If you have not requested password recovery, please ignore this email.\n\n` +
+                        `📌 If you have not requested password recovery, please ignore this email.\n\n` +
                         `📌 please, no reply this email.`
             }
 
@@ -162,7 +162,7 @@ exports.resetPass = [ validationMidd.validate, (req, res, next) => {
 }];
 
 exports.checkSecurity = [ validationMidd.validate, (req, res, next) => {
-    const id = req.params.userId
+    const id = req.userData.userId
     const pass = req.body.password
 
     User.findById(id)
