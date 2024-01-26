@@ -110,7 +110,7 @@ exports.getUser = (req, res, next) => {
         })
 }
 
-exports.updateUserById = [ validationMidd.validate, (req, res, next) => {
+exports.updateUser = [ validationMidd.validate, (req, res, next) => {
 
     const id = req.userData.userId
 
@@ -122,7 +122,6 @@ exports.updateUserById = [ validationMidd.validate, (req, res, next) => {
                     }},
                     { new: true })
                     .then( result => {
-                        console.log(result);
                         if (!result) {
                             return res.status(404).json({
                                 message: `User not found with ID ${id}`
@@ -173,7 +172,7 @@ exports.deleteUserById = (req, res, next) => {
         })
 }
 
-exports.inactivateUserById = (req, res, next) => {
+exports.inactivateUser = (req, res, next) => {
     const id = req.userData.userId
 
     User.findByIdAndUpdate(id,

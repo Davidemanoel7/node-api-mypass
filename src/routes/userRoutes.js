@@ -22,11 +22,11 @@ router.patch('/update/', checkAllowAuth, [
     body('name').optional().isString().isLength({ min: 4, max: 60 }),
     body('user').optional().isString().isLength({ min: 4, max: 20 }),
     body('email').optional().isEmail(),
-], userController.updateUserById);
+], userController.updateUser);
 
 router.delete('/del/', checkAdminAuth, userController.deleteUserById);
 
-router.patch('/inactivate/', checkCommonAuth, userController.inactivateUserById);
+router.patch('/inactivate/', checkCommonAuth, userController.inactivateUser);
 
 router.patch('/changeUserPass/', checkAllowAuth, [
     body('password').isString().isLength({ min: 6, max: 20 })
