@@ -27,7 +27,8 @@ exports.signup = [validationMidd.validate, (req, res, next) => {
                 .then( result => {
                     console.log(result);
                     const token = jwt.sign(
-                        { userId: result._id,
+                        {
+                            userId: result._id,
                             user: result.user,
                             email: result.email,
                             userType: result.userType
@@ -81,8 +82,9 @@ exports.getAllUsers = (req, res, next) => {
         })
 }
 
-exports.getUserById = (req, res, next) => {
-    const id = req.params.userId
+exports.getUser = (req, res, next) => {
+
+    const id = req.userData.userId
 
     User.findOne({_id: id})
         .select('_id name user email profileImage living')
@@ -109,7 +111,8 @@ exports.getUserById = (req, res, next) => {
 }
 
 exports.updateUserById = [ validationMidd.validate, (req, res, next) => {
-    const id = req.params.userId
+
+    const id = req.userData.userId
 
     User.findByIdAndUpdate( id,
                     { $set: {
@@ -140,7 +143,7 @@ exports.updateUserById = [ validationMidd.validate, (req, res, next) => {
 }];
 
 exports.deleteUserById = (req, res, next) => {
-    const id = req.params.userId
+    const id = req.userData.userId
 
     User.findByIdAndDelete({_id: id})
         .exec()
@@ -171,7 +174,7 @@ exports.deleteUserById = (req, res, next) => {
 }
 
 exports.inactivateUserById = (req, res, next) => {
-    const id = req.params.userId
+    const id = req.userData.userId
 
     User.findByIdAndUpdate(id,
         { $set: { living: false }},
@@ -196,7 +199,7 @@ exports.inactivateUserById = (req, res, next) => {
 }
 
 exports.changeUserPass = [ validationMidd.validate, (req, res, next) => {
-    const id = req.params.userId
+    const id = req.userData.userId
     const newPass = req.body.password
 
     bcrypt.hash(newPass, 10, (err, hashed) => {
@@ -230,7 +233,7 @@ exports.changeUserPass = [ validationMidd.validate, (req, res, next) => {
 }];
 
 exports.changeUserProfileImage = (req, res, next) => {
-    const id = req.params.userId;
+    const id = req.userData.userId;
 
     User.findByIdAndUpdate( id,
         { $set: { profileImage: req.file.path }},
