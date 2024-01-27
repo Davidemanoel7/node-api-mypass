@@ -8,7 +8,7 @@ const passSchema = mongoose.Schema({
         type: String
     },
     description: {
-        required: false,
+        required: true,
         type: String
     },
     password: {
@@ -23,6 +23,10 @@ const passSchema = mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
+    },
+    modified: {
+        type: Number,
+        required: false,
     }
 })
 
