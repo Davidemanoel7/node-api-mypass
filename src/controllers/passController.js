@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const User = require('../models/users');
 const Pass = require('../models/pass');
 const crypt = require('../middleware/crypt');
 
@@ -17,7 +16,8 @@ exports.createPassword = [ validatorMidd.validate ,(req, res, next) => {
         description: req.body.description,
         password: crypted.encryptedText,
         userId: id,
-        cryptKey: crypted.iv
+        cryptKey: crypted.iv,
+        modified: req.body.date ? req.body.date : Date.now()
     });
 
     newPass.save()
@@ -29,6 +29,7 @@ exports.createPassword = [ validatorMidd.validate ,(req, res, next) => {
                     id: result._id,
                     description: result.description,
                     userId: result.userId,
+                    createdAt: result.modified
                 }
             });
         })
@@ -43,7 +44,7 @@ exports.getAllUserPass = (req, res, next) => {
     const id = req.userData.userId;
 
     Pass.find({userId: id})
-        .select('_id description url password cryptKey userId')
+        .select()
         .exec()
         .then( docs => {
             const response = docs.map( doc => {
@@ -52,12 +53,14 @@ exports.getAllUserPass = (req, res, next) => {
                     iv: doc.cryptKey
                 }
                 const crypted = crypt.decryptString(encrypted);
+                const modifiedDate = new Date(doc.modified).toLocaleString();
                 return {
                     pass: {
                         id: doc._id,
                         url: doc.url,
                         description: doc.description,
                         password: crypted,
+                        modifiedAt: modifiedDate
                     }
                 }
             })
@@ -75,7 +78,7 @@ exports.getPassById = (req, res, next) => {
     const id = req.params.passId
 
     Pass.findOne({_id: id})
-        .select('_id description url password cryptKey userId')
+        .select()
         .exec()
         .then( pass => {
             const encrypted = {
@@ -88,12 +91,14 @@ exports.getPassById = (req, res, next) => {
                     message: `Password not found for provided ID: ${id}`
                 })
             }
+            const modifiedDate = new Date(pass.modified).toLocaleString();
             res.status(200).json({
                 pass: {
                     id: pass._id,
                     url: pass.url,
                     description: pass.description,
-                    password: crypted
+                    password: crypted,
+                    modifiedAt: modifiedDate
                 }
             });
         })
@@ -139,7 +144,8 @@ exports.changePassById = [ validatorMidd.validate, (req, res, next) => {
             url: req.body.url,
             description: req.body.description,
             password: newPass.encryptedText,
-            cryptKey: newPass.iv
+            cryptKey: newPass.iv,
+            modified: req.body.date ? req.body.date : Date.now()
         }},
         { new: true })
         .then( result => {
