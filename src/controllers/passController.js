@@ -22,7 +22,6 @@ exports.createPassword = [ validatorMidd.validate ,(req, res, next) => {
 
     newPass.save()
         .then( result => {
-            console.log(result);
             res.status(201).json({
                 message: `Password created successfully`,
                 createdpass: {
