@@ -5,7 +5,7 @@ const express = require('express');
 // Configurando a promessa global do Mongoose
 mongoose.Promise = global.Promise;
 
-const mongoUrl = process.env.DATA_BASE;
+const mongoUrl = process.env.DATA_BASE_TEST;
 
 mongoose.connect(mongoUrl)
     .then( () => console.log('\n📦 Database connected\n') )
