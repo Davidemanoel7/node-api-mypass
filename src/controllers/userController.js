@@ -91,16 +91,10 @@ exports.getUser = (req, res, next) => {
         .exec()
         .then( doc => {
             if ( doc && doc.living ) {
-                res.status(200).json({
-                    user: doc,
-                    requests: {
-                        type: "PATCH/DELETE",
-                        url: `/users/${doc._id}`
-                    }
-                })
+                res.status(200).json(doc)
             } else {
                 res.status(404).json({
-                    message: `User not found or invalid ${usr}`
+                    message: `User not found or invalid ${doc}`
                 })
             }
         })
@@ -130,10 +124,6 @@ exports.updateUser = [ validationMidd.validate, (req, res, next) => {
                         res.status(200).json({
                             message: `Updated user ${result.user} successfully`,
                             updatedUser : result,
-                            request: {
-                                type: 'GET/',
-                                url: `/users/${result.user}`
-                            }
                         })
                     })
                     .catch( err => res.status(500).json({
