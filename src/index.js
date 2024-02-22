@@ -27,7 +27,7 @@ app.use('/v1/pass/', passRoutes);
 app.use('/v1/auth/', authRoutes);
 
 app.use('/', (req, res) => {
-    res.status(200).json({
+    return res.status(200).json({
         message: 'Hello'
     });
 })
