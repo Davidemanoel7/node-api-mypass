@@ -26,12 +26,6 @@ app.use('/v1/user/', userRoutes);
 app.use('/v1/pass/', passRoutes);
 app.use('/v1/auth/', authRoutes);
 
-app.use('/', (req, res) => {
-    return res.status(200).json({
-        message: 'Hello'
-    });
-})
-
 app.listen(port, () => {
     console.log(`Server started at ${port}`);
 });
