@@ -26,6 +26,10 @@ app.use('/v1/user/', userRoutes);
 app.use('/v1/pass/', passRoutes);
 app.use('/v1/auth/', authRoutes);
 
+app.get('/', (req, res) => {
+    res.send('Hello!');
+});
+
 app.listen(port, () => {
     console.log(`Server started at ${port}`);
 });
