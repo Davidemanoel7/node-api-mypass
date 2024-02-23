@@ -27,7 +27,7 @@ if ( process.env.NODE_ENV === 'dev') {
 
 app.use((req, res, next) => {
     // Restringir o acesso da API (nesse caso qualquer origem é aceita). '*' deverá ser substituído pela url da aplicação pós deploy.
-    res.header('Access-Control-Allow-Origin', 'https://mypass-api.vercel.app/')
+    res.header('Access-Control-Allow-Origin', '*')
     
     // Tratar erros de CORS
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization')
