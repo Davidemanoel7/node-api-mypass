@@ -9,7 +9,7 @@
     "routes": [
         { "handle": "filesystem" },
         {
-            "src": "(.*)",
+            "src": "/v1/(.*)",
             "dest": "src/index.js"
         }
     ]
