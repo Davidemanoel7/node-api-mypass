@@ -7,8 +7,9 @@
         }
     ],
     "routes": [
-        { "src": "/v1/user/(.*)", "dest": "/src/routes/userRoutes"},
-        { "src": "/v1/pass/(.*)", "dest": "/src/routes/passRoutes"},
-        { "src": "/v1/auth/(.*)", "dest": "/src/routes/authRoutes"}
+        {
+            "src": "(.*)",
+            "dest": "src/index.js"
+        }
     ]
 }
