@@ -16,7 +16,7 @@ exports.sigIn = (req, res, next) => {
         .then( user => {
             if ( !user ) {
                 return res.status(404).json({
-                    message: `User ${email} not found`
+                    message: `User with email: ${email} not found`
                 });
             } else {
                 if ( !user.living ) {
