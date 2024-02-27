@@ -27,7 +27,7 @@ if ( process.env.NODE_ENV === 'dev') {
 
 app.use((req, res, next) => {
     // Restringir o acesso da API (nesse caso qualquer origem é aceita). '*' deverá ser substituído pela url da aplicação pós deploy.
-    res.header('Access-Control-Allow-Origin', '*')
+    res.header('Access-Control-Allow-Origin', 'mypass.com')
     
     // Tratar erros de CORS
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization')
@@ -47,10 +47,6 @@ const authRoutes = require('./routes/authRoutes');
 app.use('/v1/user/', userRoutes);
 app.use('/v1/pass/', passRoutes);
 app.use('/v1/auth/', authRoutes);
-
-app.get('/', (req, res) => {
-    res.send('Hello!');
-});
 
 app.use( (req, res, next) => {
     const error = new Error('Not Found :(');
