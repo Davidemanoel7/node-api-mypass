@@ -9,14 +9,14 @@ const nodemailer = require('nodemailer');
 const nodemailConfig = require('../config/nodemailConfig');
 
 exports.sigIn = (req, res, next) => {
-    const usr = req.body.user
+    const email = req.body.email
     const pass = req.body.password
 
-    User.findOne({ user: usr })
+    User.findOne({ email: email })
         .then( user => {
             if ( !user ) {
                 return res.status(404).json({
-                    message: `User ${usr} not found`
+                    message: `User ${email} not found`
                 });
             } else {
                 if ( !user.living ) {
