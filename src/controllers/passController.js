@@ -1,3 +1,4 @@
+require('dotenv').config();
 const mongoose = require('mongoose');
 const Pass = require('../models/pass');
 const crypt = require('../middleware/crypt');
