@@ -10,7 +10,7 @@ const nodemailer = require('nodemailer');
 const nodemailConfig = require('../config/nodemailConfig');
 
 exports.sigIn = async (req, res, next) => {
-    const { email, password }= req.body;
+    const { email, password } = req.body;
 
     try {
         const user = await User.findOne({ email: email });
@@ -63,11 +63,9 @@ exports.sigIn = async (req, res, next) => {
 };
 
 exports.forgotPass = [ validationMidd.validate, async (req, res, next) => {
-    const email = req.body.email;
-    
-    const token = crypto.randomBytes(20).toString('hex')
-    
     try {
+        const token = crypto.randomBytes(20).toString('hex')
+        const email = req.body.email;
         const user = await User.findOneAndUpdate(
             { email: email },
             { $set: {
@@ -91,11 +89,11 @@ exports.forgotPass = [ validationMidd.validate, async (req, res, next) => {
         });
         const mailSended = {
             from: nodemailConfig.email,
-            to: email,
+            to: user.email,
             subject: '[MyPass] Forgot Password 🔑',
             text: `You are accepting this email because you requested password recovery.\n\n` +
                     `Click the following link or paste it into your browser to complete the process:\n\n` +
-                    `http://localhost:3000/v1/auth/resetPass/${token}\n\n\n` +
+                    `https://mypass-api.onrender.com/v1/auth/resetPass/${token}\n\n\n` +
                     `📌 If you have not requested password recovery, please ignore this email.\n\n` +
                     `📌 please, no reply this email.`
         }
@@ -109,7 +107,7 @@ exports.forgotPass = [ validationMidd.validate, async (req, res, next) => {
             }
             res.status(200).json({
                 info: info,
-                message: '\nRecovery email sent, check your inbox!\n[Recovery link has expires in 1 hour]\n'
+                message: 'Recovery email sent, check your inbox! [Recovery link has expires in 1 hour]'
             })
         })
 
