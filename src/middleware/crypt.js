@@ -34,7 +34,38 @@ function decryptString(encryptedData) {
     return decrypted;
 }
 
+async function decryptPassArray( arrayPass) {
+    return Promise.all( arrayPass.map( async (p) => {
+        try {
+            const encrypted = {
+                encryptedText: p.password,
+                iv: p.cryptKey
+            };
+            const crypted = await decryptString( encrypted );
+            const modified = new Date(p.modified).toLocaleString();
+
+            return {
+                id: p._id,
+                url: p.url,
+                description: p.description,
+                password: crypted,
+                modifiedAt: modified
+            }
+        } catch (error) {
+            console.log(`Error decrypting password: ${error.message}`);
+            return {
+                id: p._id,
+                url: p.url,
+                description: p.description,
+                password: "Error decrypting password",
+                modifiedAt: new Date(p.modified).toLocaleString()
+            };
+        }
+    }))
+}
+
 module.exports = {
     encryptString,
     decryptString,
+    decryptPassArray
 }
