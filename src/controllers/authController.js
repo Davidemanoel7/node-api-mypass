@@ -93,7 +93,7 @@ exports.forgotPass = [ validationMidd.validate, async (req, res, next) => {
             subject: '[MyPass] Forgot Password 🔑',
             text: `You are accepting this email because you requested password recovery.\n\n` +
                     `Click the following link or paste it into your browser to complete the process:\n\n` +
-                    `https://mypass-api.onrender.com/v1/auth/resetPass/${token}\n\n\n` +
+                    `https://mypass-api.onrender.com/v1/auth/resetPass?token=${token}\n\n\n` +
                     `📌 If you have not requested password recovery, please ignore this email.\n\n` +
                     `📌 please, no reply this email.`
         }
@@ -120,7 +120,7 @@ exports.forgotPass = [ validationMidd.validate, async (req, res, next) => {
 }];
 
 exports.resetPass = [ validationMidd.validate, async (req, res, next) => {
-    const token = req.params.token;
+    const token = req.query.token;
 
     const newPass = bcrypt.hashSync( req.body.password, 10 );
 

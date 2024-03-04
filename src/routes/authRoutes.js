@@ -11,7 +11,7 @@ router.patch('/forgotPass/', [
     body('email').isEmail()
 ], authController.forgotPass);
 
-router.patch('/resetPass/:token', [
+router.patch('/resetPass', [
     body('password').isString().isLength({ min: 6, max:20 }),
 ], authController.resetPass);
 
