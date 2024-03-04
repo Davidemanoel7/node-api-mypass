@@ -5,6 +5,8 @@ const crypt = require('../middleware/crypt');
 
 const validatorMidd = require('../middleware/validationMidw');
 
+const PAGE_SIZE = 10;
+
 exports.createPassword = [ validatorMidd.validate, async (req, res, next) => {
     const id = req.userData.userId;
     const pass = req.body.password;
@@ -43,28 +45,36 @@ exports.createPassword = [ validatorMidd.validate, async (req, res, next) => {
 
 exports.getAllUserPass = async (req, res, next) => {
     const id = req.userData.userId;
-
+    var page = parseInt(req.query.page) || 1;
+    
+    if ( page < 1 ) {
+        page = 1;
+    }
+    
     try {
-        const arrayPass = await Pass.find({ userId: id }).select().exec();
-        const passwords = arrayPass.map( p => {
-            const encrypted = {
-                encryptedText: p.password,
-                iv: p.cryptKey
-            }
-            const crypted = crypt.decryptString(encrypted);
-            const modifiedDate = new Date(p.modified).toLocaleString();
+        const skips = PAGE_SIZE * ( page - 1); // Calculo de qnts itens pular
 
-            return {
-                id: p._id,
-                url: p.url,
-                description: p.description,
-                password: crypted,
-                modifiedAt: modifiedDate
-            }
-        })
+        if ( !mongoose.isValidObjectId(id)) {
+            return res.status(400).json({
+                error: 'Invalid user ID'
+            });
+        }
+
+        const arrayPass = await Pass.find({ userId: id })
+            .skip(skips)
+            .limit(PAGE_SIZE)
+            .select()
+            .exec();
+
+        const totalItems = await Pass.countDocuments({ userId: id })
+        const totalPages = Math.ceil( totalItems/ PAGE_SIZE );
+
+        const passwords = await crypt.decryptPassArray( arrayPass);
 
         res.status(200).json({
             count: passwords.length,
+            currentPage: page,
+            totalPages: totalPages,
             passwords
         })
 
@@ -75,10 +85,9 @@ exports.getAllUserPass = async (req, res, next) => {
 }
 
 exports.getPassById = async (req, res, next) => {
-    const id = req.params.passId
+    const id = req.query.id
     try {
-        const pass = await Pass.findOne({ _id: id }).select().exec();
-
+        const pass = await Pass.findById( id ).select().exec();
         if ( !pass ){
             return res.status(404).json({
                 message: `Password not found for provided ID: ${id}`
@@ -104,12 +113,11 @@ exports.getPassById = async (req, res, next) => {
         res.status(500).json({
             error: err
         });
-    }
-    
+    }   
 }
 
 exports.deletePassById = async (req, res, next) => {
-    const id = req.params.passId
+    const id = req.query.id
     try {
         const deletePass = await Pass.findByIdAndDelete({ _id: id });
 
@@ -132,7 +140,7 @@ exports.deletePassById = async (req, res, next) => {
 }
 
 exports.changePassById = [ validatorMidd.validate, async (req, res, next) => {
-    const id = req.params.passId
+    const id = req.query.id
     const pass = req.body.password
     
     try {

@@ -16,11 +16,11 @@ router.post('/', checkCommonAuth,[
 
 router.get('/alluserpass/', checkCommonAuth, passController.getAllUserPass);
 
-router.get('/:passId/', checkCommonAuth, passController.getPassById);
+router.get('/', checkCommonAuth, passController.getPassById);
 
-router.delete('/del/:passId/', checkCommonAuth, passController.deletePassById);
+router.delete('/del', checkCommonAuth, passController.deletePassById);
 
-router.patch('/changePass/:passId/', checkCommonAuth, [
+router.patch('/changePass', checkCommonAuth, [
     body('password').optional().isString().isLength({ min:4, max:20 }),
     body('description').isString().isLength({ max: 200 }),
     body('url').optional().isString().isLength({ max: 200 }),
