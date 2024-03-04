@@ -120,7 +120,7 @@ exports.forgotPass = [ validationMidd.validate, async (req, res, next) => {
 }];
 
 exports.resetPass = [ validationMidd.validate, async (req, res, next) => {
-    const token = req.params.token;
+    const token = req.query.token;
 
     const newPass = bcrypt.hashSync( req.body.password, 10 );
 
