@@ -45,10 +45,20 @@ exports.createPassword = [ validatorMidd.validate, async (req, res, next) => {
 
 exports.getAllUserPass = async (req, res, next) => {
     const id = req.userData.userId;
-    const page = parseInt(req.query.page) || 1;
+    var page = parseInt(req.query.page) || 1;
+    
+    if ( page < 1 ) {
+        page = 1;
+    }
     
     try {
         const skips = PAGE_SIZE * ( page - 1); // Calculo de qnts itens pular
+
+        if ( !mongoose.isValidObjectId(id)) {
+            return res.status(400).json({
+                error: 'Invalid user ID'
+            });
+        }
 
         const arrayPass = await Pass.find({ userId: id })
             .skip(skips)
@@ -59,22 +69,7 @@ exports.getAllUserPass = async (req, res, next) => {
         const totalItems = await Pass.countDocuments({ userId: id })
         const totalPages = Math.ceil( totalItems/ PAGE_SIZE );
 
-        const passwords = await Promise.all( arrayPass.map( async (p) => {
-            const encrypted = {
-                encryptedText: p.password,
-                iv: p.cryptKey
-            }
-            const crypted = crypt.decryptString(encrypted);
-            const modifiedDate = new Date(p.modified).toLocaleString();
-
-            return {
-                id: p._id,
-                url: p.url,
-                description: p.description,
-                password: crypted,
-                modifiedAt: modifiedDate
-            }
-        }))
+        const passwords = await crypt.decryptPassArray( arrayPass);
 
         res.status(200).json({
             count: passwords.length,
