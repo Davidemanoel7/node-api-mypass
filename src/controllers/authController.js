@@ -16,7 +16,7 @@ exports.sigIn = async (req, res, next) => {
         const user = await User.findOne({ email: email });
 
         if ( !user ) {
-            res.status(404).json({
+            return res.status(404).json({
                 message: `User with email: ${email} not found`
             })
         }
