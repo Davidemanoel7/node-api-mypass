@@ -14,6 +14,7 @@ router.patch('/forgotPass/', [
 router.patch('/resetPass', [
     body('password').isString().isLength({ min: 6, max:20 }),
 ], authController.resetPass);
+// isStrongPassword()
 
 router.post('/checkSecurity/', checkCommonAuth, [
     body('password').isString().isLength({ min: 6, max:20 }),

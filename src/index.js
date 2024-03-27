@@ -4,6 +4,7 @@ const express = require('express');
 const app = express();
 const port = process.env.PORT || 3000;
 const cors = require('cors')
+const firebase = require('../src/config/firebase')
 
 // Configurando a promessa global do Mongoose
 mongoose.Promise = global.Promise;

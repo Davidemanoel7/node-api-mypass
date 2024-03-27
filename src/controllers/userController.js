@@ -3,6 +3,9 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const User = require('../models/users');
 const Pass = require('../models/pass');
+const fs = require('fs');
+
+const admin = require('../config/firebase');
 
 const jwt = require('jsonwebtoken');
 
@@ -25,6 +28,7 @@ exports.signup = [validationMidd.validate, async (req, res, next) => {
             userType: req.body.userType
         });
 
+        //store image on firebase
         if ( !user ) {
             return res.status(409).json({
                 message: 'Email already exists. Please try a different e-mail'
@@ -89,7 +93,21 @@ exports.getUser = async (req, res, next) => {
             .exec()
 
         if ( user && user.living ) {
-            res.status(200).json(user);
+            const bucket = await admin.storage().bucket();
+            const file = bucket.file(`profile/${user.profileImage}`);
+            const [url] = await file.getSignedUrl({
+                action: 'read',
+                expires: Date.now() + 3600 * 24 * 7
+            });
+
+            res.status(200).json({
+                id: user._id,
+                name: user.name,
+                user: user.user,
+                email: user.email,
+                profileImage: user.profileImage ? url : null,
+                living: user.living
+            });
         } else {
             res.status(404).json({
                 message: "User not found or invalid"
@@ -212,9 +230,7 @@ exports.changeUserPass = [ validationMidd.validate, async (req, res, next) => {
 exports.changeUserProfileImage = async (req, res, next) => {
     try {
         const id = req.userData.userId;
-        const user = await User.findByIdAndUpdate( id,
-            { $set: { profileImage: req.file.path }},
-            { new: true });
+        const user = await User.findById(id);
         
         if ( !user ) {
             return res.status(404).json({
@@ -222,7 +238,27 @@ exports.changeUserProfileImage = async (req, res, next) => {
             })
         }
 
-        res.status(200).json({
+        if (!req.file) {
+            return res.status(400).json({
+                message: `Nenhuma imagem enviadda...`
+            });
+        }
+
+        const bucket = admin.storage().bucket();
+
+        await bucket.upload( req.file.path, {
+            destination: `profile/${user.id}`,
+            metadata: {
+                contentType: req.file.mimetype
+            }
+        })
+        user.profileImage = user.id;
+        await user.save();
+
+        // deletando arquivo após upload:
+        fs.unlinkSync(req.file.path);
+
+        res.status(200).json({  
             message: `Profile image changed from user ${user.user}!`
         });
 
@@ -230,7 +266,7 @@ exports.changeUserProfileImage = async (req, res, next) => {
         console.log(err);
         res.status(500).json({
             error: err,
-            message: `Cannot change profile image :(`
+            message: `Cannot change profile image :(: ${err.message}`
         });        
     }
 };
