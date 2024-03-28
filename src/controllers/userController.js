@@ -36,15 +36,21 @@ exports.signup = [validationMidd.validate, async (req, res, next) => {
 
         await user.save();
 
-        const token = jwt.sign(
-            {
-                userId: user._id,
-                user: user.user,
-                email: user.email,
-                userType: user.userType
-            },
+        const acessToken = jwt.sign({
+            userId: user._id,
+            user: user.user,
+            email: user.email,
+            userType: user.userType
+        },
             process.env.JWT_KEY,
-            { expiresIn: '24h' }
+            { expiresIn: '24h'}
+        );
+
+        const refreshToken = jwt.sign({
+            userId: user._id
+        },
+            process.env.JWT_KEY,
+            { expiresIn: '7d'}
         );
 
         res.status(201).json({
@@ -55,7 +61,8 @@ exports.signup = [validationMidd.validate, async (req, res, next) => {
                 user: user.user,
                 email: user.email,
             },
-            token: token
+            acessToken: acessToken,
+            refreshToken: refreshToken
         });
 
     } catch (err) {
@@ -245,7 +252,6 @@ exports.changeUserProfileImage = async (req, res, next) => {
             })
         }
 
-        user.profileImage = user.id;
         await user.save();
 
         res.status(200).json({  
