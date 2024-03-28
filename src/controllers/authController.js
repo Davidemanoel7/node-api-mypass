@@ -34,7 +34,7 @@ exports.sigIn = async (req, res, next) => {
             });
         }
 
-        const token = jwt.sign({
+        const acessToken = jwt.sign({
             userId: user._id,
             user: user.user,
             email: user.email,
@@ -44,10 +44,18 @@ exports.sigIn = async (req, res, next) => {
             { expiresIn: '24h'}
         );
 
+        const refreshToken = jwt.sign({
+            userId: user._id
+        },
+            process.env.JWT_KEY,
+            { expiresIn: '7d'}
+        );
+
         res.status(200).json({
-            message: "Logged!",
-            token: token
-        })
+            acessToken: acessToken,
+            refreshToken: refreshToken
+        });
+
     } catch (error) {
         console.log(error);
         if ( error.name == 'ValidationError') {
@@ -178,3 +186,46 @@ exports.checkSecurity = [ validationMidd.validate, async (req, res, next) => {
         })
     }
 }];
+
+exports.refreshToken = async (req, res) => {
+    const { refreshToken } = req.body;
+
+    if ( !refreshToken ) {
+        res.status(401).json({
+            message: 'Missing Refresh Token'
+        });
+    }
+
+    try {
+        const decoded = jwt.verify( refreshToken, process.env.JWT_KEY );
+
+        const user = await User.findById( decoded.userId );
+
+        if ( !user ) {
+            return res.status(401).json({
+                message: 'User not found or invalid refresh token... Try signin again!'
+            });
+        }
+
+        const acessToken = jwt.sign({
+            userId: user._id,
+            user: user.user,
+            email: user.email,
+            userType: user.userType
+        },
+            process.env.JWT_KEY,
+            { expiresIn: '24h'}
+        );
+
+        res.status(200).json({
+            acessToken: acessToken
+        });
+
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({
+            error: `${err.message}`,
+            message: 'Something\'s wrong. Try again latter...'
+        });
+    }
+}
