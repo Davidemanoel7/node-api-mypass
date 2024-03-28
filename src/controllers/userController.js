@@ -3,9 +3,8 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const User = require('../models/users');
 const Pass = require('../models/pass');
-const fs = require('fs');
 
-const admin = require('../config/firebase');
+const { uploadImage, downLoadImage } = require('../middleware/firebaseStorage');
 
 const jwt = require('jsonwebtoken');
 
@@ -93,19 +92,14 @@ exports.getUser = async (req, res, next) => {
             .exec()
 
         if ( user && user.living ) {
-            const bucket = await admin.storage().bucket();
-            const file = bucket.file(`profile/${user.profileImage}`);
-            const [url] = await file.getSignedUrl({
-                action: 'read',
-                expires: Date.now() + 3600 * 24 * 7
-            });
+            const imageUrl = user.profileImage ? await downLoadImage(`profile/${user.profileImage}`) : null;
 
             res.status(200).json({
                 id: user._id,
                 name: user.name,
                 user: user.user,
                 email: user.email,
-                profileImage: user.profileImage ? url : null,
+                profileImage: imageUrl,
                 living: user.living
             });
         } else {
@@ -228,7 +222,13 @@ exports.changeUserPass = [ validationMidd.validate, async (req, res, next) => {
 }];
 
 exports.changeUserProfileImage = async (req, res, next) => {
-    try {
+    try { 
+        if ( !req.file ) {
+            return res.status(415).json({
+                message: `Nenhuma imagem enviadda...`
+            });
+        }
+        
         const id = req.userData.userId;
         const user = await User.findById(id);
         
@@ -238,25 +238,15 @@ exports.changeUserProfileImage = async (req, res, next) => {
             })
         }
 
-        if (!req.file) {
-            return res.status(400).json({
-                message: `Nenhuma imagem enviadda...`
-            });
+        const uploaded = await uploadImage( req.file, `/profile/${user.id}` );
+        if ( !uploaded ) {
+            return res.status(500).json({
+                message: 'Algo de errado aconteceu no upload de imagens...'
+            })
         }
 
-        const bucket = admin.storage().bucket();
-
-        await bucket.upload( req.file.path, {
-            destination: `profile/${user.id}`,
-            metadata: {
-                contentType: req.file.mimetype
-            }
-        })
         user.profileImage = user.id;
         await user.save();
-
-        // deletando arquivo após upload:
-        fs.unlinkSync(req.file.path);
 
         res.status(200).json({  
             message: `Profile image changed from user ${user.user}!`
