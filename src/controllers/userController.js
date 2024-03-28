@@ -251,6 +251,7 @@ exports.changeUserProfileImage = async (req, res, next) => {
             })
         }
 
+        user.profileImage = user.id
         await user.save();
 
         res.status(200).json({  
