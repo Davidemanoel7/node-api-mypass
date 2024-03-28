@@ -1,7 +1,7 @@
 const express = require('express');
 const { body } = require('express-validator');
 const authController = require('../controllers/authController');
-const { checkCommonAuth } = require('../middleware/check-auth');
+const { checkAuth } = require('../middleware/check-auth');
 
 const router = express.Router();
 
@@ -16,7 +16,7 @@ router.patch('/resetPass', [
 ], authController.resetPass);
 // isStrongPassword()
 
-router.post('/checkSecurity/', checkCommonAuth, [
+router.post('/checkSecurity/', checkAuth, [
     body('password').isString().isLength({ min: 6, max:20 }),
 ], authController.checkSecurity);
 
