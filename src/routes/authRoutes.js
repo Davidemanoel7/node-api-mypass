@@ -20,6 +20,6 @@ router.post('/checkSecurity/', checkAuth, [
     body('password').isString().isLength({ min: 6, max:20 }),
 ], authController.checkSecurity);
 
-router.post('/getRefreshToken', authController.refreshToken );
+router.post('/getAcessToken', authController.refreshToken );
 
 module.exports = router;
