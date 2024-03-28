@@ -239,7 +239,7 @@ exports.changeUserProfileImage = async (req, res, next) => {
         }
 
         if (!req.file) {
-            return res.status(400).json({
+            return res.status(415).json({
                 message: `Nenhuma imagem enviadda...`
             });
         }
