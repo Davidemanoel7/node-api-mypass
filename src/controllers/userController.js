@@ -27,7 +27,6 @@ exports.signup = [validationMidd.validate, async (req, res, next) => {
             userType: req.body.userType
         });
 
-        //store image on firebase
         if ( !user ) {
             return res.status(409).json({
                 message: 'Email already exists. Please try a different e-mail'
