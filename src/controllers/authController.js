@@ -191,7 +191,7 @@ exports.refreshToken = async (req, res) => {
     const { refreshToken } = req.body;
 
     if ( !refreshToken ) {
-        res.status(401).json({
+        return res.status(401).json({
             message: 'Missing Refresh Token'
         });
     }
