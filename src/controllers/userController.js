@@ -244,7 +244,7 @@ exports.changeUserProfileImage = async (req, res, next) => {
             })
         }
 
-        const uploaded = await uploadImage( req.file, `/profile/${user.id}` );
+        const uploaded = await uploadImage( req.file, user.id );
         if ( !uploaded ) {
             return res.status(500).json({
                 message: 'Algo de errado aconteceu no upload de imagens...'
