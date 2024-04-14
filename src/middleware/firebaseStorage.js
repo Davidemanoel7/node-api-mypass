@@ -62,7 +62,7 @@ const downLoadImage = async ( pathToFileName ) => {
         const file = bucket.file(`${pathToFileName}`);
         const [url] = await file.getSignedUrl({
             action: 'read',
-            expires: Date.now() + 3600 * 24 * 7
+            expires: Date.now() + 3600 * 24 * 30
         });
 
         if ( !url ) {
