@@ -2,11 +2,18 @@ const fireBaseAdmin = require('../config/firebase');
 const fs = require('fs');
 
 
-const uploadImage = async ( reqFile, destination ) => {
+const uploadImage = async ( reqFile, fileName ) => {
     try {
+        const destine = `profile/${ fileName }`
         const bucket = fireBaseAdmin.storage().bucket();
+
+        const fileExists = await deleteFile( bucket, destine )
+        if ( !fileExists ) {
+            console.log(`File exists => ${fileExists}`)
+        }
+
         const uploaded = await bucket.upload( reqFile.path, {
-            destination: `profile/${destination}`,
+            destination: destine,
             metadata: {
                 contentType: reqFile.mimetype
             }
@@ -22,6 +29,30 @@ const uploadImage = async ( reqFile, destination ) => {
     } catch (error) {
         console.log(error);
         return false;
+    }
+}
+
+const deleteFile = async ( bucket, destination ) => {
+    try {
+        const file = await bucket.getFiles({
+            prefix: destination
+        });
+        if ( !file ) {
+            return false
+        }
+        await bucket.deleteFiles({
+            prefix: destination
+            },
+            function( err ) {
+                if ( err ) {
+                    console.log(`Error: ${err}`)
+                }
+                return false
+            }
+        )
+        return true
+    } catch (error) {
+        console.log(`Error: ${error}`)
     }
 }
 
