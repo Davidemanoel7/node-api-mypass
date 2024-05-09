@@ -49,6 +49,12 @@ app.use('/v1/user/', userRoutes);
 app.use('/v1/pass/', passRoutes);
 app.use('/v1/auth/', authRoutes);
 
+app.use('/health', ( req, res, next ) => {
+    res.status(200).json({
+        message: 'Hello, world :D !'
+    })
+});
+
 app.use( (req, res, next) => {
     const error = new Error('Not Found :(');
     error.status = 404;
